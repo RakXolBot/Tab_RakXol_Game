@@ -57,50 +57,46 @@
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
 
-        let score = parseInt(localStorage.getItem('score') || '0');
-        let energy = 500;
-        
-        const scoreEl = document.getElementById('score');
-        const energyEl = document.getElementById('energy');
-        const coinEl = document.getElementById('coin');
+let score = parseInt(localStorage.getItem('score') || '0');
+let energy = 500;
 
-        // فرمت کردن عدد (مثلا 1,000)
-        const formatNumber = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        scoreEl.innerText = formatNumber(score);
+const scoreEl = document.getElementById('score');
+const energyEl = document.getElementById('energy');
+const coinEl = document.getElementById('coin');
 
-        coinEl.addEventListener('touchstart', (e) => {
-            if (energy <= 0) return;
-            
-            // افزایش سکه
-            score += 1;
-            energy -= 1;
-            
-            scoreEl.innerText = formatNumber(score);
-            energyEl.innerText = energy;
-            localStorage.setItem('score', score);
+// فرمت کردن عدد (مثلا 1,000)
+const formatNumber = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+scoreEl.innerText = formatNumber(score);
 
-            // افکت لرزش تلگرام
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+// استفاده از pointerdown به جای touchstart برای پشتیبانی از همه دستگاه‌ها
+coinEl.addEventListener('pointerdown', (e) => {
+    if (energy <= 0) return;
+    
+    // افزایش سکه
+    score += 1;
+    energy -= 1;
+    
+    scoreEl.innerText = formatNumber(score);
+    energyEl.innerText = energy;
+    localStorage.setItem('score', score);
 
-            // افکت +1
-            const rect = coinEl.getBoundingClientRect();
-            const touch = e.touches[0];
-            const x = touch.clientX;
-            const y = touch.clientY;
+    // افکت لرزش تلگرام
+    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 
-            const effect = document.createElement('div');
-            effect.className = 'tap-effect';
-            effect.innerText = '+1';
-            effect.style.left = x + 'px';
-            effect.style.top = y + 'px';
-            document.body.appendChild(effect);
+    // افکت +1
+    const x = e.clientX;
+    const y = e.clientY;
 
-            setTimeout(() => effect.remove(), 800);
-        });
-    </script>
-</body>
-</html>
+    const effect = document.createElement('div');
+    effect.className = 'tap-effect';
+    effect.innerText = '+1';
+    effect.style.left = x + 'px';
+    effect.style.top = y + 'px';
+    document.body.appendChild(effect);
+
+    setTimeout(() => effect.remove(), 800);
+});
