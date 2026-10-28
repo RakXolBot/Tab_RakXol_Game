@@ -47,7 +47,6 @@
 
     <div class="coin-wrapper">
         <div class="coin" id="coin">
-            <!-- عکس خودت رو اینجا قرار بده -->
             <img src="coin.jpg" alt="Coin" onerror="this.src='https://i.imgur.com/8QO9Y3v.jpeg'">
         </div>
     </div>
@@ -57,46 +56,46 @@
     </div>
 
     <script>
-const tg = window.Telegram.WebApp;
-tg.ready();
-tg.expand();
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
 
-let score = parseInt(localStorage.getItem('score') || '0');
-let energy = 500;
+        let score = parseInt(localStorage.getItem('score') || '0');
+        let energy = 500;
+        
+        const scoreEl = document.getElementById('score');
+        const energyEl = document.getElementById('energy');
+        const coinEl = document.getElementById('coin');
 
-const scoreEl = document.getElementById('score');
-const energyEl = document.getElementById('energy');
-const coinEl = document.getElementById('coin');
+        const formatNumber = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        scoreEl.innerText = formatNumber(score);
 
-// فرمت کردن عدد (مثلا 1,000)
-const formatNumber = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-scoreEl.innerText = formatNumber(score);
+        // استفاده از click که همه جا کار میکنه
+        coinEl.addEventListener('click', (e) => {
+            if (energy <= 0) return;
+            
+            score += 1;
+            energy -= 1;
+            
+            scoreEl.innerText = formatNumber(score);
+            energyEl.innerText = energy;
+            localStorage.setItem('score', score);
 
-// استفاده از pointerdown به جای touchstart برای پشتیبانی از همه دستگاه‌ها
-coinEl.addEventListener('pointerdown', (e) => {
-    if (energy <= 0) return;
-    
-    // افزایش سکه
-    score += 1;
-    energy -= 1;
-    
-    scoreEl.innerText = formatNumber(score);
-    energyEl.innerText = energy;
-    localStorage.setItem('score', score);
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 
-    // افکت لرزش تلگرام
-    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            // افکت +1
+            const x = e.clientX || (window.innerWidth / 2);
+            const y = e.clientY || (window.innerHeight / 2);
 
-    // افکت +1
-    const x = e.clientX;
-    const y = e.clientY;
+            const effect = document.createElement('div');
+            effect.className = 'tap-effect';
+            effect.innerText = '+1';
+            effect.style.left = (x - 15) + 'px';
+            effect.style.top = (y - 30) + 'px';
+            document.body.appendChild(effect);
 
-    const effect = document.createElement('div');
-    effect.className = 'tap-effect';
-    effect.innerText = '+1';
-    effect.style.left = x + 'px';
-    effect.style.top = y + 'px';
-    document.body.appendChild(effect);
-
-    setTimeout(() => effect.remove(), 800);
-});
+            setTimeout(() => effect.remove(), 800);
+        });
+    </script>
+</body>
+</html>
