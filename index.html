@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tab RakXol</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at top, #1e2a4a, #070b14);
+            color: white; height: 100vh; display: flex; flex-direction: column; align-items: center; overflow: hidden;
+        }
+        .header { width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .score-container { display: flex; flex-direction: column; align-items: center; margin-top: 20px; }
+        .score { font-size: 56px; font-weight: 900; color: #ffd700; text-shadow: 0 0 20px rgba(255,215,0,0.4); }
+        .score-label { font-size: 14px; color: #888; margin-top: -5px; }
+        .coin-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; width: 100%; }
+        .coin {
+            width: 240px; height: 240px; border-radius: 50%;
+            background: conic-gradient(from 0deg, #ffd700, #ffed4e, #b8860b, #ffd700);
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(0,0,0,0.5);
+            cursor: pointer; transition: transform 0.05s ease;
+            position: relative;
+        }
+        .coin:active { transform: scale(0.92); }
+        .coin img { width: 210px; height: 210px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.2); }
+        .tap-effect { position: absolute; color: #fff; font-weight: bold; font-size: 28px; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 10; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-80px) scale(1.5); } }
+        .footer { width: 100%; padding: 20px; display: flex; justify-content: center; }
+        .energy { background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="font-size: 24px;">⚙️</div>
+        <div style="font-weight: bold; font-size: 18px;">Tab RakXol</div>
+        <div style="font-size: 24px;">🏆</div>
+    </div>
+
+    <div class="score-container">
+        <div class="score" id="score">0</div>
+        <div class="score-label">COINS</div>
+    </div>
+
+    <div class="coin-wrapper">
+        <div class="coin" id="coin">
+            <!-- عکس خودت رو اینجا قرار بده -->
+            <img src="coin.jpg" alt="Coin" onerror="this.src='https://i.imgur.com/8QO9Y3v.jpeg'">
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="energy">⚡ <span id="energy">500</span> / 500</div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let score = parseInt(localStorage.getItem('score') || '0');
+        let energy = 500;
+        
+        const scoreEl = document.getElementById('score');
+        const energyEl = document.getElementById('energy');
+        const coinEl = document.getElementById('coin');
+
+        // فرمت کردن عدد (مثلا 1,000)
+        const formatNumber = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        scoreEl.innerText = formatNumber(score);
+
+        coinEl.addEventListener('touchstart', (e) => {
+            if (energy <= 0) return;
+            
+            // افزایش سکه
+            score += 1;
+            energy -= 1;
+            
+            scoreEl.innerText = formatNumber(score);
+            energyEl.innerText = energy;
+            localStorage.setItem('score', score);
+
+            // افکت لرزش تلگرام
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+
+            // افکت +1
+            const rect = coinEl.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX;
+            const y = touch.clientY;
+
+            const effect = document.createElement('div');
+            effect.className = 'tap-effect';
+            effect.innerText = '+1';
+            effect.style.left = x + 'px';
+            effect.style.top = y + 'px';
+            document.body.appendChild(effect);
+
+            setTimeout(() => effect.remove(), 800);
+        });
+    </script>
+</body>
+</html>
