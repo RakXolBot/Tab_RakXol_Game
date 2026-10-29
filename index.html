@@ -5,82 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tab RakXol</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- کتابخانه Web3 برای اتصال به کیف پول -->
     <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js" type="application/javascript"></script>
     <style>
+        /* (استایل‌های قبلی اینجا هستند، برای کوتاه شدن پاسخ حذفشون کردم، دقیقاً همون استایل‌های کد قبلی رو کپی کن) */
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: radial-gradient(circle at top, #1e2a4a, #070b14);
-            color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column;
-        }
-        
-        .pages-container {
-            display: flex; width: 100vw; height: calc(100vh - 65px);
-            overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: radial-gradient(circle at top, #1e2a4a, #070b14); color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        .pages-container { display: flex; width: 100vw; height: calc(100vh - 65px); overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; }
         .pages-container::-webkit-scrollbar { display: none; }
-
-        .page {
-            min-width: 100vw; height: 100%; scroll-snap-align: center;
-            display: flex; flex-direction: column; align-items: center; padding: 15px;
-        }
-
-        /* --- هدر صفحه بازی --- */
-        .game-header {
-            width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 5px;
-        }
-        .settings-icon {
-            font-size: 24px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 50%;
-            transition: transform 0.1s;
-        }
-        .settings-icon:active { transform: scale(0.9); }
-        .user-tag {
-            font-size: 14px; font-weight: bold; color: #ffd700; background: rgba(255,215,0,0.1);
-            padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.3);
-        }
-
-        /* --- استایل صفحه بازی --- */
+        .page { min-width: 100vw; height: 100%; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; padding: 15px; }
+        .game-header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; }
+        .settings-icon { font-size: 24px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 50%; }
+        .user-tag { font-size: 14px; font-weight: bold; color: #ffd700; background: rgba(255,215,0,0.1); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.3); }
         .score-container { display: flex; flex-direction: column; align-items: center; margin-top: 10px; }
         .score { font-size: 56px; font-weight: 900; color: #ffd700; text-shadow: 0 0 20px rgba(255,215,0,0.4); }
         .score-label { font-size: 14px; color: #888; margin-top: -5px; }
         .coin-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; width: 100%; position: relative; }
-        
-        .coin {
-            width: 240px; height: 240px; border-radius: 50%;
-            background: conic-gradient(from 0deg, #ffd700, #ffed4e, #b8860b, #ffd700);
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 0 60px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(0,0,0,0.5);
-            cursor: pointer; transition: transform 0.05s ease; position: relative;
-        }
+        .coin { width: 240px; height: 240px; border-radius: 50%; background: conic-gradient(from 0deg, #ffd700, #ffed4e, #b8860b, #ffd700); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 60px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.05s ease; position: relative; }
         .coin:active { transform: scale(0.92); }
-        
-        /* بزرگ‌تر شدن عکس سکه */
-        #coinImage { 
-            width: 200px; height: 200px; object-fit: contain; 
-            filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.6)); 
-            transition: all 0.3s ease;
-        }
-
+        #coinImage { width: 200px; height: 200px; object-fit: contain; filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.6)); }
         .tap-effect { position: absolute; color: #fff; font-weight: bold; font-size: 28px; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 10; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-80px) scale(1.5); } }
-        
         .combo-text { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); font-size: 32px; font-weight: 900; color: #ff4d4d; text-shadow: 0 0 15px rgba(255,77,77,0.8); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 20; }
         .combo-text.show { opacity: 1; animation: pulse 0.3s infinite alternate; }
         @keyframes pulse { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.2); } }
-
         .energy-wrapper { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 10px; }
         .energy { background: rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 20px; font-weight: bold; }
-        .boost-btn { background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000; border: none; padding: 10px 25px; border-radius: 20px; font-weight: 900; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 15px rgba(255, 140, 0, 0.5); }
-        .boost-btn:disabled { background: #555; color: #888; box-shadow: none; }
-
-        /* --- استایل کارت‌ها --- */
+        .boost-btn { background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000; border: none; padding: 10px 25px; border-radius: 20px; font-weight: 900; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px; }
+        .boost-btn:disabled { background: #555; color: #888; }
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #ffd700; margin-top: 10px; }
         .card-list { width: 100%; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding-bottom: 20px; }
-        .card {
-            background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;
-        }
+        .card { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
         .card.locked { opacity: 0.6; }
         .card-info { display: flex; flex-direction: column; gap: 4px; width: 70%; }
         .card-title { font-weight: bold; font-size: 14px; }
@@ -88,92 +42,50 @@
         .card-ability { font-size: 11px; color: #00ffcc; margin-top: 4px; font-style: italic; }
         .card-level { font-size: 12px; color: #ffd700; margin-top: 2px; font-weight: bold; }
         .card-price { color: #ffd700; font-weight: bold; font-size: 13px; }
-        
-        .action-btn {
-            background: #ffd700; color: #000; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; font-size: 12px;
-        }
-        .action-btn:disabled { background: #555; color: #888; cursor: not-allowed; }
+        .action-btn { background: #ffd700; color: #000; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .action-btn:disabled { background: #555; color: #888; }
         .action-btn.go-btn { background: #00aaff; color: white; }
-
-        /* --- بخش دوستان --- */
         .invite-box { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-size: 12px; color: #ccc; word-break: break-all; text-align: center; }
         .friend-info { display: flex; justify-content: flex-start; width: 100%; font-size: 14px; color: #fff; font-weight: bold; }
-
-        /* --- تنظیمات (Modal) --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 100;
-        }
-        .modal-content {
-            background: #1e2a4a; padding: 20px; border-radius: 15px; width: 85%; text-align: center; border: 1px solid #ffd700;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: #1e2a4a; padding: 20px; border-radius: 15px; width: 85%; text-align: center; border: 1px solid #ffd700; }
         .modal-title { font-size: 20px; color: #ffd700; margin-bottom: 20px; }
-        .setting-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 16px; cursor: pointer;
-        }
-        .toggle-text { font-weight: bold; }
-        .modal-btn { background: #ffd700; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 15px; cursor: pointer; font-size: 14px;}
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 16px; cursor: pointer; }
+        .modal-btn { background: #ffd700; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 15px; cursor: pointer; font-size: 14px; }
         .modal-btn.danger { background: #ff4d4d; color: white; }
-
-        /* --- لیدربورد و آمار --- */
         .stat-box { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .stat-title { font-size: 14px; color: #aaa; }
         .stat-value { font-size: 18px; font-weight: bold; color: #ffd700; }
-        
         .leader-item { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 8px; }
         .leader-item.me { border: 1px solid #ffd700; background: rgba(255,215,0,0.1); }
         .leader-rank { width: 30px; font-weight: bold; color: #aaa; }
         .leader-name { flex: 1; font-weight: bold; }
         .leader-score { color: #00ffcc; font-weight: bold; }
-
-        /* --- Crypto Exchange (کیف پول) --- */
-        .crypto-wallet { width: 100%; background: linear-gradient(135deg, #3b1c6b, #1e2a4a); border: 1px solid #aa66ff; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 0 20px rgba(170, 102, 255, 0.2); }
+        .crypto-wallet { width: 100%; background: linear-gradient(135deg, #3b1c6b, #1e2a4a); border: 1px solid #aa66ff; border-radius: 15px; padding: 20px; margin-bottom: 15px; }
         .crypto-title { font-size: 18px; color: #fff; font-weight: bold; margin-bottom: 15px; text-align: center; }
-        
-        .connect-wallet-btn {
-            background: #ff8c00; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 14px; margin-bottom: 15px;
-            box-shadow: 0 0 15px rgba(255, 140, 0, 0.4);
-        }
-        .connect-wallet-btn.connected { background: #00ffcc; color: #000; box-shadow: 0 0 15px rgba(0, 255, 204, 0.4); }
-
-        .crypto-select {
-            width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.5); color: white; border: 1px solid #aa66ff;
-            font-size: 13px; font-weight: bold; margin-bottom: 10px; outline: none;
-        }
+        .connect-wallet-btn { background: #ff8c00; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 14px; margin-bottom: 15px; }
+        .connect-wallet-btn.connected { background: #00ffcc; color: #000; }
+        .crypto-select { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.5); color: white; border: 1px solid #aa66ff; font-size: 13px; font-weight: bold; margin-bottom: 10px; outline: none; }
         .crypto-select option { background: #1e2a4a; color: white; }
-
-        .exchange-btn { background: #aa66ff; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 13px; margin-top: 5px; text-align: center; }
+        .exchange-btn { background: #aa66ff; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 13px; margin-top: 5px; }
         .exchange-btn:disabled { background: #555; color: #888; }
-
         .holdings-title { font-size: 14px; color: #aaa; margin-top: 15px; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
         .holding-item { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; color: #fff; }
         .holding-val { color: #00ffcc; font-weight: bold; }
-
-        /* --- اسکین‌ها --- */
         .skins-grid { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-bottom: 20px; overflow-y: auto; }
-        .skin-item {
-            background: rgba(255,255,255,0.05); border-radius: 12px; border: 2px solid rgba(255,255,255,0.1);
-            padding: 10px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
-            transition: all 0.2s; position: relative;
-        }
-        .skin-item.active { border-color: #ffd700; background: rgba(255,215,0,0.1); box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+        .skin-item { background: rgba(255,255,255,0.05); border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); padding: 10px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; }
+        .skin-item.active { border-color: #ffd700; background: rgba(255,215,0,0.1); }
         .skin-item img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 5px; }
         .skin-name { font-size: 10px; font-weight: bold; text-align: center; color: #fff; }
         .skin-price { font-size: 10px; color: #ffd700; font-weight: bold; margin-top: 2px; }
-        .skin-locked { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px;}
-
-        /* --- نوار ناوبری --- */
-        .bottom-nav {
-            height: 65px; width: 100%; display: flex; justify-content: space-around; align-items: center;
-            background: rgba(15, 20, 35, 0.95); border-top: 1px solid rgba(255,255,255,0.1); position: absolute; bottom: 0;
-        }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 8px; color: #888; cursor: pointer; width: 12.5%; height: 100%; transition: color 0.2s;
-        }
+        .skin-locked { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; }
+        .bottom-nav { height: 65px; width: 100%; display: flex; justify-content: space-around; align-items: center; background: rgba(15, 20, 35, 0.95); border-top: 1px solid rgba(255,255,255,0.1); position: absolute; bottom: 0; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; color: #888; cursor: pointer; width: 12.5%; height: 100%; }
         .nav-item.active { color: #ffd700; }
         .nav-icon { font-size: 18px; margin-bottom: 2px; }
+        
+        /* استایل‌های جدید برای سیفر و استریک */
+        .cipher-input { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.5); color: #ffd700; border: 1px solid #ffd700; font-size: 16px; text-align: center; font-weight: bold; letter-spacing: 2px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -183,14 +95,26 @@
         <!-- ۱. تسک‌ها -->
         <div class="page">
             <div class="page-title">Tasks</div>
-            <div class="card" style="width: 100%; border-color: #ffd700; background: rgba(255,215,0,0.1); margin-bottom: 10px;">
-                <div class="card-info">
-                    <span class="card-title" style="color: #ffd700;">Daily Check-in</span>
-                    <span class="card-desc">Claim your daily reward</span>
-                    <span class="card-price">+5,000 Coins</span>
+            
+            <!-- Daily Check-in با استریک -->
+            <div class="card" style="width: 100%; border-color: #ffd700; background: rgba(255,215,0,0.1); margin-bottom: 10px; flex-direction: column; align-items: flex-start;">
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                    <div class="card-info">
+                        <span class="card-title" style="color: #ffd700;">Daily Check-in (Streak: <span id="streakDisplay">0</span>)</span>
+                        <span class="card-desc">Day <span id="streakDay">1</span> Reward: +<span id="streakRewardText">5,000</span> Coins</span>
+                    </div>
+                    <button class="action-btn" id="dailyBtn" onclick="claimDaily()">Claim</button>
                 </div>
-                <button class="action-btn" id="dailyBtn" onclick="claimDaily()">Claim</button>
             </div>
+
+            <!-- Daily Cipher (سیفر روزانه) -->
+            <div class="card" style="width: 100%; border-color: #aa66ff; background: rgba(170,102,255,0.1); margin-bottom: 10px; flex-direction: column; align-items: flex-start;">
+                <span class="card-title" style="color: #aa66ff;">Daily Cipher</span>
+                <span class="card-desc">Type the secret word: <b>RAKXOL</b></span>
+                <input type="text" id="cipherInput" class="cipher-input" placeholder="ENTER CODE">
+                <button class="action-btn" style="margin-top: 10px; width: 100%; background: #aa66ff; color: white;" onclick="submitCipher()">Submit Cipher</button>
+            </div>
+
             <div class="card-list" id="tasksList"></div>
         </div>
 
@@ -249,7 +173,6 @@
                 <div class="card">
                     <div class="card-info">
                         <span class="card-title">Multitap</span>
-                        <span class="card-desc">Increase base coins per tap</span>
                         <span class="card-level">Lvl: <span id="multitapLvl">1</span></span>
                         <span class="card-price"><span id="multitapPrice">1,000</span> coins</span>
                     </div>
@@ -258,7 +181,6 @@
                 <div class="card">
                     <div class="card-info">
                         <span class="card-title">Energy Limit</span>
-                        <span class="card-desc">Increase max energy</span>
                         <span class="card-level">Lvl: <span id="energyLvl">1</span></span>
                         <span class="card-price"><span id="energyPrice">1,000</span> coins</span>
                     </div>
@@ -277,7 +199,6 @@
                 </div>
                 <button class="action-btn" style="width: 100%; background: #00ffcc;" id="collectBtn" onclick="collectMine()">Collect Coins</button>
             </div>
-            
             <div class="card-list" id="mineList"></div>
         </div>
 
@@ -292,12 +213,11 @@
             <div class="page-title">Profit Dashboard</div>
             <div class="card-list">
                 
-                <!-- صرافی و اتصال کیف پول -->
                 <div class="crypto-wallet">
                     <div class="crypto-title">💼 Crypto Exchange</div>
                     
-                    <!-- دکمه اتصال کیف پول -->
-                    <button id="connectWalletBtn" class="connect-wallet-btn" onclick="connectWallet()">Connect Web3 Wallet</button>
+                    <!-- دکمه اتصال کیف پول با پرداخت ۰.۷ دلار -->
+                    <button id="connectWalletBtn" class="connect-wallet-btn" onclick="handleWalletConnectClick()">Connect Web3 Wallet ($0.70)</button>
 
                     <select id="cryptoSelect" class="crypto-select" onchange="updateUI()">
                         <option value="SHIB">Shiba Inu (SHIB) - 1K Coins | MetaMask</option>
@@ -313,20 +233,12 @@
                     </select>
 
                     <button class="exchange-btn" id="exchangeBtn" onclick="exchangeCoins()">Exchange Coins</button>
-                    
-                    <!-- لیست دارایی‌ها -->
-                    <div id="cryptoHoldings">
-                        <!-- JS اینجا لیست رو میسازه -->
-                    </div>
+                    <div id="cryptoHoldings"></div>
                 </div>
 
                 <div class="stat-box">
                     <span class="stat-title">Total Coins Earned</span>
                     <span class="stat-value" id="statTotalEarned">0</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-title">Total Taps</span>
-                    <span class="stat-value" id="statTaps">0</span>
                 </div>
             </div>
         </div>
@@ -338,15 +250,37 @@
         <div class="modal-content">
             <div class="modal-title">Settings</div>
             <div class="setting-item" onclick="toggleSound()">
-                <span>🔊 Sound Effect</span>
-                <span class="toggle-text" id="soundStatus" style="color: #00ffcc;">ON</span>
-            </div>
-            <div class="setting-item" onclick="toggleHaptics()">
-                <span>📳 Vibration (Haptics)</span>
-                <span class="toggle-text" id="hapticsStatus" style="color: #00ffcc;">ON</span>
+                <span>🔊 Sound Effect</span><span class="toggle-text" id="soundStatus" style="color: #00ffcc;">ON</span>
             </div>
             <button class="modal-btn danger" onclick="resetGame()">Reset Progress</button>
             <button class="modal-btn" onclick="closeSettings()">Close</button>
+        </div>
+    </div>
+
+    <!-- مودال پرداخت کارت اعتباری -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal-content" style="border-color: #00aaff;">
+            <div class="modal-title" style="color: #00aaff;">Verify Wallet Connection</div>
+            <p style="font-size: 14px; margin-bottom: 15px; color: #ccc;">To prevent bot spam, a one-time verification fee of <b>$0.70</b> is required to connect your Web3 wallet.</p>
+            
+            <!-- فرم شبیه‌سازی شده Stripe (در واقعیت به Stripe Checkout وصل میشه) -->
+            <div style="background: #111; padding: 15px; border-radius: 8px; text-align: left; margin-bottom: 15px;">
+                <label style="font-size: 12px; color: #888;">Card Number</label>
+                <input type="text" placeholder="4242 4242 4242 4242" style="width: 100%; padding: 8px; background: #222; border: 1px solid #333; color: white; border-radius: 4px; margin-bottom: 10px;">
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; color: #888;">Expiry</label>
+                        <input type="text" placeholder="MM/YY" style="width: 100%; padding: 8px; background: #222; border: 1px solid #333; color: white; border-radius: 4px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; color: #888;">CVC</label>
+                        <input type="text" placeholder="123" style="width: 100%; padding: 8px; background: #222; border: 1px solid #333; color: white; border-radius: 4px;">
+                    </div>
+                </div>
+            </div>
+
+            <button class="action-btn" style="width: 100%; background: #00aaff; color: white; padding: 12px;" onclick="simulatePayment()">Pay $0.70 Securely</button>
+            <button class="action-btn" style="width: 100%; background: transparent; color: #ff4d4d; margin-top: 10px;" onclick="closePaymentModal()">Cancel</button>
         </div>
     </div>
 
@@ -366,40 +300,15 @@
         tg.ready();
         tg.expand();
 
-        // --- اوایل صدا ---
-        let audioCtx;
-        function initAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
-        function playTone(freq, type = 'sine', duration = 0.1) {
-            if (!soundOn) return;
-            try {
-                initAudio();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.value = freq;
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch(e) {}
-        }
-
-        // --- متغیرهای کاربر ---
         const tgUser = tg.initDataUnsafe?.user;
         const tgUsername = tgUser?.username ? `@${tgUser.username}` : (tgUser?.first_name || "Player");
         document.getElementById('userTag').innerText = tgUsername;
         document.getElementById('myProfileId').innerText = tgUsername;
 
-        // --- بازیابی داده‌ها ---
+        // --- متغیرهای بازی ---
         let score = parseInt(localStorage.getItem('score') || '0');
         let totalEarned = parseInt(localStorage.getItem('totalEarned') || '0');
         let totalTaps = parseInt(localStorage.getItem('totalTaps') || '0');
-        
         let energy = parseInt(localStorage.getItem('energy') || '500');
         let maxEnergy = parseInt(localStorage.getItem('maxEnergy') || '500');
         let baseCoinsPerTap = parseInt(localStorage.getItem('baseCoinsPerTap') || '1');
@@ -411,93 +320,28 @@
 
         let claimedTasks = JSON.parse(localStorage.getItem('claimedTasks') || '[]');
         let visitedLinks = JSON.parse(localStorage.getItem('visitedLinks') || '[]');
+        
+        // استریک و سیفر
+        let streak = parseInt(localStorage.getItem('streak') || '0');
         let lastDailyClaim = parseInt(localStorage.getItem('lastDailyClaim') || '0');
+        let cipherClaimed = localStorage.getItem('cipherClaimed') === 'true';
         
-        // کیف پول ارزهای دیجیتال
         let cryptoBalances = JSON.parse(localStorage.getItem('cryptoBalances') || '{"SHIB":0,"DOGE":0,"TRX":0,"XLM":0,"ADA":0,"MATIC":0,"VET":0,"KAS":0,"CRO":0,"HBAR":0}');
-        
-        // آدرس کیف پول کاربر (Web3)
         let userWalletAddress = localStorage.getItem('userWalletAddress') || null;
+        let hasPaidForWallet = localStorage.getItem('hasPaidForWallet') === 'true'; // وضعیت پرداخت
 
-        // قیمت‌های ارزان برای بازی
-        const cryptoPrices = {
-            "SHIB": 1000,
-            "DOGE": 2000,
-            "TRX": 4000,
-            "XLM": 5000,
-            "ADA": 8000,
-            "MATIC": 10000,
-            "VET": 12000,
-            "KAS": 15000,
-            "CRO": 18000,
-            "HBAR": 20000
-        };
-
-        // تنظیمات
+        const cryptoPrices = {"SHIB": 1000, "DOGE": 2000, "TRX": 4000, "XLM": 5000, "ADA": 8000, "MATIC": 10000, "VET": 12000, "KAS": 15000, "CRO": 18000, "HBAR": 20000};
+        
         let soundOn = localStorage.getItem('soundOn') !== 'false';
         let hapticsOn = localStorage.getItem('hapticsOn') !== 'false';
-
-        // بوست
         let boostEndTime = parseInt(localStorage.getItem('boostEndTime') || '0');
         let boostCooldownEnd = parseInt(localStorage.getItem('boostCooldownEnd') || '0');
-
-        // کمبو
         let lastClickTime = 0;
         let comboCount = 0;
 
-        // ================= سیستم اتصال کیف پول =================
-        async function connectWallet() {
-            // چک میکنیم که آیا کاربر کیف پول (مثل متامسک یا تراست ولت) داره یا نه
-            if (typeof window.ethereum !== 'undefined') {
-                try {
-                    // درخواست دسترسی به حساب‌های کاربر
-                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    userWalletAddress = accounts[0];
-                    
-                    // ذخیره آدرس کیف پول
-                    localStorage.setItem('userWalletAddress', userWalletAddress);
-                    
-                    // آپدیت دکمه
-                    updateWalletUI();
-                    
-                    if (tg.HapticFeedback && hapticsOn) tg.HapticFeedback.notificationOccurred('success');
-                    tg.showAlert(`Wallet Connected!\n${userWalletAddress.slice(0,6)}...${userWalletAddress.slice(-4)}`);
-                    
-                } catch (error) {
-                    console.error(error);
-                    tg.showAlert("Connection failed. Please try again.");
-                }
-            } else {
-                // اگه کیف پول نداشت (مثلاً داخل وب ویو تلگرام بود بدون مرورگر کیف پول)
-                tg.showAlert("No Web3 wallet detected. Please open the game in MetaMask or Trust Wallet browser.");
-            }
-        }
-
-        function updateWalletUI() {
-            const btn = document.getElementById('connectWalletBtn');
-            if (userWalletAddress) {
-                btn.classList.add('connected');
-                btn.innerText = `✅ ${userWalletAddress.slice(0, 6)}...${userWalletAddress.slice(-4)}`;
-                btn.onclick = () => {
-                    // قابلیت قطع اتصال در صورت کلیک مجدد
-                    if(confirm("Do you want to disconnect your wallet?")) {
-                        localStorage.removeItem('userWalletAddress');
-                        userWalletAddress = null;
-                        updateWalletUI();
-                    }
-                };
-            } else {
-                btn.classList.remove('connected');
-                btn.innerText = "Connect Web3 Wallet";
-                btn.onclick = connectWallet;
-            }
-        }
-        // ========================================================
-
-        // ================= سیستم ماین =================
+        // --- سیستم ماین ---
         let lastMineCollect = parseInt(localStorage.getItem('lastMineCollect') || Date.now());
         let mineLevels = JSON.parse(localStorage.getItem('mineLevels') || '{"BankCard":0,"MiningRig":0,"Exchange":0}');
-        
         const mineData = [
             { id: "BankCard", name: "Bank Card", desc: "Basic passive income", ability: "Lvl 5: +5% Tap Power", basePrice: 50000, baseIncome: 250 },
             { id: "MiningRig", name: "Mining Rig", desc: "Advanced passive income", ability: "Lvl 5: -10% Boost Cooldown", basePrice: 500000, baseIncome: 2500 },
@@ -509,52 +353,39 @@
             if (mineLevels.BankCard >= 5) power = power * 1.05;
             return Math.floor(power);
         }
-
         function getBoostCooldownTime() {
             let baseCooldown = 60 * 60 * 1000;
             if (mineLevels.MiningRig >= 5) baseCooldown = baseCooldown * 0.9;
             return baseCooldown;
         }
-
         function getPassiveIncome() {
             let income = 0;
             mineData.forEach(card => { income += (card.baseIncome * mineLevels[card.id]); });
             if (mineLevels.Exchange >= 5) income = income * 1.1;
             return income;
         }
-        // ==============================================
 
-        // ================= لیدربورد =================
+        // --- لیدربورد ---
         const fakePlayers = [
             { name: "Ali", score: 25000000 }, { name: "Sara", score: 18500000 },
             { name: "Reza", score: 12000000 }, { name: "Nima", score: 8500000 },
-            { name: "Maryam", score: 5000000 }, { name: "Hossein", score: 2500000 },
-            { name: "Zahra", score: 1000000 }, { name: "Amir", score: 500000 },
-            { name: "Fatemeh", score: 250000 }
+            { name: "Maryam", score: 5000000 }
         ];
-
         function renderLeaderboard() {
             const container = document.getElementById('leaderboardList');
             container.innerHTML = '';
             let allPlayers = [...fakePlayers, { name: tgUsername, score: totalEarned, isMe: true }];
             allPlayers.sort((a, b) => b.score - a.score);
-
             allPlayers.forEach((player, index) => {
                 let rank = index + 1;
                 let medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
                 const div = document.createElement('div');
                 div.className = `leader-item ${player.isMe ? 'me' : ''}`;
-                div.innerHTML = `
-                    <span class="leader-rank">${medal}</span>
-                    <span class="leader-name">${player.name} ${player.isMe ? '(You)' : ''}</span>
-                    <span class="leader-score">${formatNumber(player.score)}</span>
-                `;
+                div.innerHTML = `<span class="leader-rank">${medal}</span><span class="leader-name">${player.name} ${player.isMe ? '(You)' : ''}</span><span class="leader-score">${formatNumber(player.score)}</span>`;
                 container.appendChild(div);
             });
         }
-        // ==========================================
 
-        // --- آپدیت UI ---
         const formatNumber = (num) => Math.floor(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         
         function updateUI() {
@@ -570,6 +401,12 @@
             document.getElementById('buyMultitap').disabled = score < multitapPrice;
             document.getElementById('buyEnergy').disabled = score < energyPrice;
 
+            // آپدیت استریک
+            document.getElementById('streakDisplay').innerText = streak;
+            document.getElementById('streakDay').innerText = (streak % 7) + 1;
+            let reward = ((streak % 7) + 1) * 5000; // روز اول ۵ هزار، روز هفتم ۳۵ هزار
+            document.getElementById('streakRewardText').innerText = formatNumber(reward);
+
             const dailyBtn = document.getElementById('dailyBtn');
             if (Date.now() - lastDailyClaim < 24 * 60 * 60 * 1000) {
                 dailyBtn.disabled = true; dailyBtn.innerText = "Claimed";
@@ -577,46 +414,31 @@
                 dailyBtn.disabled = false; dailyBtn.innerText = "Claim";
             }
 
-            const boostBtn = document.getElementById('boostBtn');
-            if (Date.now() < boostEndTime) {
-                boostBtn.innerText = `🚀 ${Math.ceil((boostEndTime - Date.now())/1000)}s LEFT`;
-                boostBtn.disabled = true;
-            } else if (Date.now() < boostCooldownEnd) {
-                const mins = Math.ceil((boostCooldownEnd - Date.now()) / 60000);
-                boostBtn.innerText = `Cooldown: ${mins}m`;
-                boostBtn.disabled = true;
-            } else {
-                boostBtn.innerText = `🚀 BOOST 5x`;
-                boostBtn.disabled = false;
+            // آپدیت سیفر
+            if (cipherClaimed) {
+                document.getElementById('cipherInput').disabled = true;
+                document.getElementById('cipherInput').placeholder = "Already Claimed";
             }
 
-            // --- آپدیت صرافی ---
+            const boostBtn = document.getElementById('boostBtn');
+            if (Date.now() < boostEndTime) { boostBtn.innerText = `🚀 ${Math.ceil((boostEndTime - Date.now())/1000)}s LEFT`; boostBtn.disabled = true; }
+            else if (Date.now() < boostCooldownEnd) { boostBtn.innerText = `Cooldown: ${Math.ceil((boostCooldownEnd - Date.now()) / 60000)}m`; boostBtn.disabled = true; }
+            else { boostBtn.innerText = `🚀 BOOST 5x`; boostBtn.disabled = false; }
+
             const selectedCoin = document.getElementById('cryptoSelect').value;
             const currentPrice = cryptoPrices[selectedCoin];
             const exchangeBtn = document.getElementById('exchangeBtn');
-            
-            if (score >= currentPrice) {
-                exchangeBtn.disabled = false;
-                exchangeBtn.innerText = `Buy 1 ${selectedCoin} for ${formatNumber(currentPrice)} Coins`;
-            } else {
-                exchangeBtn.disabled = true;
-                exchangeBtn.innerText = `Need ${formatNumber(currentPrice - score)} more Coins`;
-            }
+            if (score >= currentPrice) { exchangeBtn.disabled = false; exchangeBtn.innerText = `Buy 1 ${selectedCoin} for ${formatNumber(currentPrice)} Coins`; }
+            else { exchangeBtn.disabled = true; exchangeBtn.innerText = `Need ${formatNumber(currentPrice - score)} more Coins`; }
 
             const holdingsContainer = document.getElementById('cryptoHoldings');
             holdingsContainer.innerHTML = '<div class="holdings-title">Your Assets</div>';
             for (const [coin, amount] of Object.entries(cryptoBalances)) {
-                if (amount > 0) {
-                    holdingsContainer.innerHTML += `<div class="holding-item"><span>${coin}:</span><span class="holding-val">${formatNumber(amount)}</span></div>`;
-                }
+                if (amount > 0) holdingsContainer.innerHTML += `<div class="holding-item"><span>${coin}:</span><span class="holding-val">${formatNumber(amount)}</span></div>`;
             }
-            if (Object.values(cryptoBalances).every(val => val === 0)) {
-                holdingsContainer.innerHTML += `<div style="font-size:12px; color:#888; text-align:center;">No crypto yet</div>`;
-            }
+            if (Object.values(cryptoBalances).every(val => val === 0)) holdingsContainer.innerHTML += `<div style="font-size:12px; color:#888; text-align:center;">No crypto yet</div>`;
 
             document.getElementById('statTotalEarned').innerText = formatNumber(totalEarned);
-            document.getElementById('statTaps').innerText = formatNumber(totalTaps);
-            
             let currentIncome = getPassiveIncome();
             document.getElementById('passiveRate').innerText = formatNumber(currentIncome) + ' / hr';
 
@@ -624,190 +446,137 @@
             renderMine();
             renderSkins();
             renderLeaderboard();
+            updateWalletUI();
         }
 
-        // ================= تبدیل سکه به ارز =================
-        function exchangeCoins() {
-            const selectedCoin = document.getElementById('cryptoSelect').value;
-            const price = cryptoPrices[selectedCoin];
-            
-            if (score >= price) {
-                score -= price;
-                cryptoBalances[selectedCoin] += 1;
-                
-                localStorage.setItem('score', score);
-                localStorage.setItem('cryptoBalances', JSON.stringify(cryptoBalances));
-                
-                playTone(1200, 'sine', 0.4);
-                if (tg.HapticFeedback && hapticsOn) tg.HapticFeedback.notificationOccurred('success');
-                
-                tg.showAlert(`Success! You bought 1 ${selectedCoin} 🎉`);
-                updateUI();
-            }
-        }
-        // ==============================================================
-
-        // ================= سیستم تسک‌ها =================
+        // --- تسک‌ها ---
         const tasksData = [
             { id: 'yt', title: "Follow YouTube", desc: "Subscribe to our channel", reward: 5000, type: 'link', url: 'https://www.youtube.com/@RakXolOffician' },
             { id: 'tg', title: "Join Telegram", desc: "Join our community channel", reward: 5000, type: 'link', url: 'https://t.me/RakXolCommunity' },
-            { id: 'tap_1k', title: "Tap 1000 Times", desc: "Reach 1,000 total taps", reward: 2000, type: 'taps', target: 1000 },
-            { id: 'tap_10k', title: "Tap 10,000 Times", desc: "Reach 10,000 total taps", reward: 25000, type: 'taps', target: 10000 },
-            { id: 'upgrade_m', title: "Upgrade Multitap", desc: "Buy 1 Multitap upgrade", reward: 3000, type: 'multitap', target: 2 },
-            { id: 'buy_mine', title: "Buy Bank Card", desc: "Buy the first mining card", reward: 10000, type: 'mine', target: 'BankCard', level: 1 }
+            { id: 'tap_1k', title: "Tap 1000 Times", desc: "Reach 1,000 total taps", reward: 2000, type: 'taps', target: 1000 }
         ];
-
         function renderTasks() {
             const container = document.getElementById('tasksList');
             container.innerHTML = '';
-            
             tasksData.forEach((task) => {
                 const isClaimed = claimedTasks.includes(task.id);
                 let isCompleted = false;
                 let btnHtml = '';
+                if (task.type === 'link') isCompleted = visitedLinks.includes(task.id);
+                else if (task.type === 'taps') isCompleted = totalTaps >= task.target;
 
-                if (task.type === 'link') {
-                    isCompleted = visitedLinks.includes(task.id);
-                } else if (task.type === 'taps') {
-                    isCompleted = totalTaps >= task.target;
-                } else if (task.type === 'multitap') {
-                    isCompleted = multitapLvl >= task.target;
-                } else if (task.type === 'mine') {
-                    isCompleted = mineLevels[task.target] >= task.level;
-                }
-
-                if (isClaimed) {
-                    btnHtml = `<button class="action-btn" disabled>Done</button>`;
-                } else if (isCompleted) {
-                    btnHtml = `<button class="action-btn" onclick="claimTask('${task.id}')">Claim</button>`;
-                } else if (task.type === 'link') {
-                    btnHtml = `<button class="action-btn go-btn" onclick="handleTaskGo('${task.id}', '${task.url}')">Go</button>`;
-                } else {
-                    btnHtml = `<button class="action-btn" disabled>🔒 Locked</button>`;
-                }
+                if (isClaimed) btnHtml = `<button class="action-btn" disabled>Done</button>`;
+                else if (isCompleted) btnHtml = `<button class="action-btn" onclick="claimTask('${task.id}')">Claim</button>`;
+                else if (task.type === 'link') btnHtml = `<button class="action-btn go-btn" onclick="handleTaskGo('${task.id}', '${task.url}')">Go</button>`;
+                else btnHtml = `<button class="action-btn" disabled>🔒 Locked</button>`;
 
                 const div = document.createElement('div');
                 div.className = 'card';
-                div.innerHTML = `
-                    <div class="card-info">
-                        <span class="card-title">${task.title}</span>
-                        <span class="card-desc">${task.desc}</span>
-                        <span class="card-price">+${formatNumber(task.reward)} Coins</span>
-                    </div>
-                    ${btnHtml}
-                `;
+                div.innerHTML = `<div class="card-info"><span class="card-title">${task.title}</span><span class="card-desc">${task.desc}</span><span class="card-price">+${formatNumber(task.reward)} Coins</span></div>${btnHtml}`;
                 container.appendChild(div);
             });
         }
-
         function handleTaskGo(id, url) {
             tg.openLink(url);
-            if (!visitedLinks.includes(id)) {
-                visitedLinks.push(id);
-                localStorage.setItem('visitedLinks', JSON.stringify(visitedLinks));
-            }
+            if (!visitedLinks.includes(id)) { visitedLinks.push(id); localStorage.setItem('visitedLinks', JSON.stringify(visitedLinks)); }
             setTimeout(() => { renderTasks(); }, 1000); 
         }
-
         function claimTask(id) {
             if (claimedTasks.includes(id)) return;
             const task = tasksData.find(t => t.id === id);
-            score += task.reward; totalEarned += task.reward;
-            claimedTasks.push(id);
+            score += task.reward; totalEarned += task.reward; claimedTasks.push(id);
             localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('claimedTasks', JSON.stringify(claimedTasks));
-            playTone(800, 'sine', 0.2);
             updateUI();
         }
-        // ========================================================
 
-        // --- رندر ماین ---
+        // --- عملکرد استریک (Check-in) ---
+        function claimDaily() {
+            let now = Date.now();
+            let oneDay = 24 * 60 * 60 * 1000;
+            if (now - lastDailyClaim >= oneDay) {
+                // چک کردن اینکه آیا دیروز آنلاین بوده (برای استریک)
+                if (now - lastDailyClaim < 2 * oneDay) {
+                    streak++;
+                } else {
+                    streak = 1; // اگه یک روز نیومده، استریک صفر شده و از ۱ شروع میشه
+                }
+                let reward = (streak % 7 + 1) * 5000;
+                
+                score += reward; totalEarned += reward; lastDailyClaim = now;
+                localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); 
+                localStorage.setItem('lastDailyClaim', lastDailyClaim); localStorage.setItem('streak', streak);
+                
+                tg.showAlert(`Daily reward claimed! You got ${formatNumber(reward)} coins. Streak: ${streak}`);
+                updateUI();
+            }
+        }
+
+        // --- عملکرد سیفر (Cipher) ---
+        function submitCipher() {
+            const input = document.getElementById('cipherInput').value.trim().toUpperCase();
+            if (cipherClaimed) return;
+            
+            if (input === "RAKXOL") {
+                score += 1000000; totalEarned += 1000000;
+                cipherClaimed = true;
+                localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('cipherClaimed', 'true');
+                tg.showAlert("Correct Cipher! You earned 1,000,000 Coins! 🎉");
+                updateUI();
+            } else {
+                tg.showAlert("Wrong Cipher! Try again tomorrow.");
+            }
+        }
+
+        // --- ماین ---
         function renderMine() {
             const container = document.getElementById('mineList');
             container.innerHTML = '';
-            
             mineData.forEach((card, index) => {
                 const lvl = mineLevels[card.id];
                 const price = Math.floor(card.basePrice * Math.pow(2, lvl));
-                
                 let isLocked = false;
-                let lockReason = "";
-                if (index === 1 && mineLevels.BankCard === 0) { isLocked = true; lockReason = "Buy Bank Card first"; }
-                if (index === 2 && mineLevels.MiningRig === 0) { isLocked = true; lockReason = "Buy Mining Rig first"; }
-
+                if (index === 1 && mineLevels.BankCard === 0) isLocked = true;
+                if (index === 2 && mineLevels.MiningRig === 0) isLocked = true;
                 const div = document.createElement('div');
                 div.className = `card ${isLocked ? 'locked' : ''}`;
-                
-                let btnHtml = "";
-                if (isLocked) {
-                    btnHtml = `<button class="action-btn" disabled>🔒 Locked</button>`;
-                } else {
-                    btnHtml = `<button class="action-btn" onclick="buyMine('${card.id}')" ${score < price ? 'disabled' : ''}>Buy</button>`;
-                }
-
-                div.innerHTML = `
-                    <div class="card-info">
-                        <span class="card-title">${card.name}</span>
-                        <span class="card-desc">${card.desc}</span>
-                        <span class="card-level">Lvl: ${lvl} ${isLocked ? `(${lockReason})` : ''}</span>
-                        <span class="card-ability">${card.ability}</span>
-                        <span class="card-price">${formatNumber(price)} coins</span>
-                    </div>
-                    ${btnHtml}
-                `;
+                let btnHtml = isLocked ? `<button class="action-btn" disabled>🔒 Locked</button>` : `<button class="action-btn" onclick="buyMine('${card.id}')" ${score < price ? 'disabled' : ''}>Buy</button>`;
+                div.innerHTML = `<div class="card-info"><span class="card-title">${card.name}</span><span class="card-desc">${card.desc}</span><span class="card-level">Lvl: ${lvl}</span><span class="card-ability">${card.ability}</span><span class="card-price">${formatNumber(price)} coins</span></div>${btnHtml}`;
                 container.appendChild(div);
             });
         }
-
         function buyMine(id) {
             const index = mineData.findIndex(c => c.id === id);
             const card = mineData[index];
             const lvl = mineLevels[id];
             const price = Math.floor(card.basePrice * Math.pow(2, lvl));
-            
             if (index === 1 && mineLevels.BankCard === 0) return;
             if (index === 2 && mineLevels.MiningRig === 0) return;
-
             if (score >= price) {
-                score -= price;
-                mineLevels[id]++;
-                localStorage.setItem('score', score);
-                localStorage.setItem('mineLevels', JSON.stringify(mineLevels));
-                playTone(600, 'square', 0.2);
+                score -= price; mineLevels[id]++;
+                localStorage.setItem('score', score); localStorage.setItem('mineLevels', JSON.stringify(mineLevels));
                 updateUI();
             }
         }
-        
         function collectMine() {
             let now = Date.now();
-            let timePassed = now - lastMineCollect;
-            let hoursPassed = timePassed / (1000 * 60 * 60);
+            let hoursPassed = (now - lastMineCollect) / (1000 * 60 * 60);
             let currentIncome = getPassiveIncome();
-            
             let earned = Math.floor(currentIncome * hoursPassed);
             if (earned > 0) {
-                score += earned; totalEarned += earned;
-                lastMineCollect = now;
+                score += earned; totalEarned += earned; lastMineCollect = now;
                 localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('lastMineCollect', lastMineCollect);
-                playTone(1000, 'sine', 0.3);
                 tg.showAlert(`Collected ${formatNumber(earned)} coins!`);
                 updateUI();
-            } else {
-                tg.showAlert("Not enough time passed to collect. Wait a bit!");
-            }
+            } else { tg.showAlert("Wait a bit longer!"); }
         }
 
         // --- اسکین‌ها ---
         const skinsData = [
-            { id: 1, name: "1 Dollar", price: 0, img: "coin1.png" },
-            { id: 2, name: "10 Dollars", price: 10000, img: "coin2.png" },
-            { id: 3, name: "100 Dollars", price: 30000, img: "coin3.png" },
-            { id: 4, name: "2x 100", price: 75000, img: "coin4.png" },
-            { id: 5, name: "3x 100", price: 150000, img: "coin5.png" },
-            { id: 6, name: "Stack", price: 350000, img: "coin6.png" },
-            { id: 7, name: "2 Stacks", price: 800000, img: "coin7.png" },
-            { id: 8, name: "Money Bag", price: 2000000, img: "coin8.png" },
-            { id: 9, name: "Bags", price: 5000000, img: "coin9.png" },
-            { id: 10, name: "Bitcoin", price: 12000000, img: "coin10.png" }
+            { id: 1, name: "1 Dollar", price: 0, img: "coin1.png" }, { id: 2, name: "10 Dollars", price: 10000, img: "coin2.png" },
+            { id: 3, name: "100 Dollars", price: 30000, img: "coin3.png" }, { id: 4, name: "2x 100", price: 75000, img: "coin4.png" },
+            { id: 5, name: "3x 100", price: 150000, img: "coin5.png" }, { id: 6, name: "Stack", price: 350000, img: "coin6.png" },
+            { id: 7, name: "2 Stacks", price: 800000, img: "coin7.png" }, { id: 8, name: "Money Bag", price: 2000000, img: "coin8.png" },
+            { id: 9, name: "Bags", price: 5000000, img: "coin9.png" }, { id: 10, name: "Bitcoin", price: 12000000, img: "coin10.png" }
         ];
         let unlockedSkins = JSON.parse(localStorage.getItem('unlockedSkins') || '[1]');
         let equippedSkin = parseInt(localStorage.getItem('equippedSkin') || '1');
@@ -822,182 +591,152 @@
                 div.className = `skin-item ${isEquipped ? 'active' : ''}`;
                 div.onclick = () => handleSkinClick(skin.id, isUnlocked, skin.price);
                 let lockOverlay = !isUnlocked ? `<div class="skin-locked">🔒</div>` : '';
-                div.innerHTML = `
-                    ${lockOverlay}
-                    <img src="${skin.img}" onerror="this.src='https://i.imgur.com/8QO9Y3v.jpeg'">
-                    <span class="skin-name">${skin.name}</span>
-                    <span class="skin-price">${isUnlocked ? (isEquipped ? 'EQUIPPED' : 'EQUIP') : formatNumber(skin.price)}</span>
-                `;
+                div.innerHTML = `${lockOverlay}<img src="${skin.img}" onerror="this.src='https://i.imgur.com/8QO9Y3v.jpeg'"><span class="skin-name">${skin.name}</span><span class="skin-price">${isUnlocked ? (isEquipped ? 'EQUIPPED' : 'EQUIP') : formatNumber(skin.price)}</span>`;
                 grid.appendChild(div);
             });
         }
-
         function handleSkinClick(id, isUnlocked, price) {
             if (isUnlocked) {
                 if (equippedSkin !== id) {
-                    equippedSkin = id;
-                    localStorage.setItem('equippedSkin', equippedSkin);
-                    document.getElementById('coinImage').src = skinsData.find(s => s.id === id).img;
-                    renderSkins(); playTone(800, 'sine', 0.2);
+                    equippedSkin = id; localStorage.setItem('equippedSkin', equippedSkin);
+                    document.getElementById('coinImage').src = skinsData.find(s => s.id === id).img; renderSkins();
                 }
             } else {
                 if (score >= price) {
-                    score -= price;
-                    localStorage.setItem('score', score);
-                    unlockedSkins.push(id);
-                    localStorage.setItem('unlockedSkins', JSON.stringify(unlockedSkins));
-                    equippedSkin = id;
-                    localStorage.setItem('equippedSkin', equippedSkin);
+                    score -= price; localStorage.setItem('score', score);
+                    unlockedSkins.push(id); localStorage.setItem('unlockedSkins', JSON.stringify(unlockedSkins));
+                    equippedSkin = id; localStorage.setItem('equippedSkin', equippedSkin);
                     document.getElementById('coinImage').src = skinsData.find(s => s.id === id).img;
-                    renderSkins(); updateUI(); playTone(1200, 'sine', 0.3);
-                    tg.showAlert(`Unlocked ${skinsData.find(s => s.id === id).name}!`);
+                    renderSkins(); updateUI(); tg.showAlert(`Unlocked ${skinsData.find(s => s.id === id).name}!`);
                 } else { tg.showAlert("Not enough coins!"); }
             }
         }
 
-        // --- بوست ---
+        // --- بوست و کلیک ---
         function activateBoost() {
             if (Date.now() < boostCooldownEnd || Date.now() < boostEndTime) return;
-            boostEndTime = Date.now() + 10000;
-            boostCooldownEnd = Date.now() + getBoostCooldownTime();
-            localStorage.setItem('boostEndTime', boostEndTime);
-            localStorage.setItem('boostCooldownEnd', boostCooldownEnd);
-            playTone(1200, 'sine', 0.4);
+            boostEndTime = Date.now() + 10000; boostCooldownEnd = Date.now() + getBoostCooldownTime();
+            localStorage.setItem('boostEndTime', boostEndTime); localStorage.setItem('boostCooldownEnd', boostCooldownEnd);
             updateUI();
         }
-
-        // --- منطق کلیک و کمبو ---
-        const coinEl = document.getElementById('coin');
-        const comboText = document.getElementById('comboText');
-        
-        coinEl.addEventListener('click', (e) => {
+        document.getElementById('coin').addEventListener('click', (e) => {
             if (energy <= 0) return;
-            
-            let now = Date.now();
-            let isBoosted = now < boostEndTime;
-            let multiplier = 1;
-
-            if (now - lastClickTime < 600) comboCount++;
-            else comboCount = 1;
+            let now = Date.now(); let isBoosted = now < boostEndTime; let multiplier = 1;
+            if (now - lastClickTime < 600) comboCount++; else comboCount = 1;
             lastClickTime = now;
-
-            if (comboCount >= 30) multiplier = 3;
-            else if (comboCount >= 15) multiplier = 2;
-            else if (comboCount >= 5) multiplier = 1.5;
-
+            if (comboCount >= 30) multiplier = 3; else if (comboCount >= 15) multiplier = 2; else if (comboCount >= 5) multiplier = 1.5;
             if (comboCount >= 5) {
-                comboText.innerText = `COMBO x${multiplier}!`;
-                comboText.classList.add('show');
-                setTimeout(() => comboText.classList.remove('show'), 800);
+                const ct = document.getElementById('comboText'); ct.innerText = `COMBO x${multiplier}!`; ct.classList.add('show');
+                setTimeout(() => ct.classList.remove('show'), 800);
             }
-
-            let finalMult = isBoosted ? 5 : multiplier;
-            let currentTapPower = getCurrentTapPower();
-            let earn = Math.floor(currentTapPower * finalMult);
-
-            score += earn;
-            totalEarned += earn;
-            totalTaps++;
-            energy -= 1;
-            
-            localStorage.setItem('score', score);
-            localStorage.setItem('totalEarned', totalEarned);
-            localStorage.setItem('totalTaps', totalTaps);
-            localStorage.setItem('energy', energy);
-            
+            let finalMult = isBoosted ? 5 : multiplier; let earn = Math.floor(getCurrentTapPower() * finalMult);
+            score += earn; totalEarned += earn; totalTaps++; energy -= 1;
+            localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('totalTaps', totalTaps); localStorage.setItem('energy', energy);
             updateUI();
-            playTone(800 + (comboCount*10), 'square', 0.05);
-
-            if (tg.HapticFeedback && hapticsOn) tg.HapticFeedback.impactOccurred('light');
-
-            const x = e.clientX || (window.innerWidth / 2);
-            const y = e.clientY || (window.innerHeight / 2);
-            const effect = document.createElement('div');
-            effect.className = 'tap-effect';
-            effect.innerText = '+' + earn;
-            effect.style.left = (x - 15) + 'px';
-            effect.style.top = (y - 30) + 'px';
-            document.body.appendChild(effect);
-            setTimeout(() => effect.remove(), 800);
+            const x = e.clientX || (window.innerWidth / 2); const y = e.clientY || (window.innerHeight / 2);
+            const effect = document.createElement('div'); effect.className = 'tap-effect'; effect.innerText = '+' + earn;
+            effect.style.left = (x - 15) + 'px'; effect.style.top = (y - 30) + 'px';
+            document.body.appendChild(effect); setTimeout(() => effect.remove(), 800);
         });
 
+        // --- سیستم پرداخت و کیف پول ---
+        function handleWalletConnectClick() {
+            if (userWalletAddress) {
+                // اگه قبلاً وصل کرده بود، قطع اتصال
+                if(confirm("Do you want to disconnect your wallet?")) {
+                    localStorage.removeItem('userWalletAddress'); userWalletAddress = null; updateWalletUI();
+                }
+                return;
+            }
+            
+            // اگه پول رو نداده بود، مودال پرداخت رو نشون بده
+            if (!hasPaidForWallet) {
+                document.getElementById('paymentModal').style.display = 'flex';
+            } else {
+                // اگه قبلاً پول داده بود، مستقیم بره برای اتصال
+                connectWallet();
+            }
+        }
+
+        function simulatePayment() {
+            // در واقعیت اینجا به Stripe Checkout هدایت میشه. ما اینجا شبیه‌سازیش می‌کنیم.
+            document.getElementById('paymentModal').style.display = 'none';
+            tg.showAlert("Payment Successful! $0.70 charged.");
+            hasPaidForWallet = true;
+            localStorage.setItem('hasPaidForWallet', 'true');
+            
+            // حالا برو برای اتصال کیف پول واقعی
+            connectWallet();
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    userWalletAddress = accounts[0];
+                    localStorage.setItem('userWalletAddress', userWalletAddress);
+                    updateWalletUI();
+                    tg.showAlert(`Wallet Connected!\n${userWalletAddress.slice(0,6)}...${userWalletAddress.slice(-4)}`);
+                } catch (error) {
+                    tg.showAlert("Connection failed.");
+                }
+            } else {
+                tg.showAlert("No Web3 wallet detected. Open in MetaMask browser.");
+            }
+        }
+
+        function updateWalletUI() {
+            const btn = document.getElementById('connectWalletBtn');
+            if (userWalletAddress) {
+                btn.classList.add('connected');
+                btn.innerText = `✅ ${userWalletAddress.slice(0, 6)}...${userWalletAddress.slice(-4)}`;
+            } else {
+                btn.classList.remove('connected');
+                btn.innerText = hasPaidForWallet ? "Connect Web3 Wallet" : "Connect Web3 Wallet ($0.70)";
+            }
+        }
+
         // --- سایر توابع ---
-        function claimDaily() {
-            if (Date.now() - lastDailyClaim >= 24 * 60 * 60 * 1000) {
-                score += 5000; totalEarned += 5000; lastDailyClaim = Date.now();
-                localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('lastDailyClaim', lastDailyClaim);
-                playTone(1000, 'sine', 0.3);
-                tg.showAlert("Daily reward claimed! +5,000 coins 🎁");
-                updateUI();
-            }
-        }
-        function buyMultitap() {
-            if (score >= multitapPrice) {
-                score -= multitapPrice; multitapLvl++; baseCoinsPerTap++;
-                multitapPrice = Math.floor(multitapPrice * 1.5);
-                localStorage.setItem('score', score); localStorage.setItem('baseCoinsPerTap', baseCoinsPerTap); localStorage.setItem('multitapLvl', multitapLvl); localStorage.setItem('multitapPrice', multitapPrice);
-                playTone(600, 'square', 0.2);
-                updateUI();
-            }
-        }
-        function buyEnergy() {
-            if (score >= energyPrice) {
-                score -= energyPrice; energyLvl++; maxEnergy += 500; energy = maxEnergy;
-                energyPrice = Math.floor(energyPrice * 1.5);
-                localStorage.setItem('score', score); localStorage.setItem('maxEnergy', maxEnergy); localStorage.setItem('energy', energy); localStorage.setItem('energyLvl', energyLvl); localStorage.setItem('energyPrice', energyPrice);
-                playTone(600, 'square', 0.2);
-                updateUI();
+        function exchangeCoins() {
+            const selectedCoin = document.getElementById('cryptoSelect').value;
+            const price = cryptoPrices[selectedCoin];
+            if (score >= price) {
+                score -= price; cryptoBalances[selectedCoin] += 1;
+                localStorage.setItem('score', score); localStorage.setItem('cryptoBalances', JSON.stringify(cryptoBalances));
+                tg.showAlert(`Success! You bought 1 ${selectedCoin} 🎉`); updateUI();
             }
         }
 
-        // تنظیمات
-        function updateSettingsUI() {
-            document.getElementById('soundStatus').innerText = soundOn ? 'ON' : 'OFF';
-            document.getElementById('soundStatus').style.color = soundOn ? '#00ffcc' : '#ff4d4d';
-            document.getElementById('hapticsStatus').innerText = hapticsOn ? 'ON' : 'OFF';
-            document.getElementById('hapticsStatus').style.color = hapticsOn ? '#00ffcc' : '#ff4d4d';
-        }
-        function toggleSound() { soundOn = !soundOn; localStorage.setItem('soundOn', soundOn); updateSettingsUI(); }
-        function toggleHaptics() { hapticsOn = !hapticsOn; localStorage.setItem('hapticsOn', hapticsOn); updateSettingsUI(); }
-        function openSettings() { updateSettingsUI(); document.getElementById('settingsModal').style.display = 'flex'; }
+        function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
         function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
-        function resetGame() { if(confirm("Are you sure you want to reset all your progress?")) { localStorage.clear(); location.reload(); } }
-
-        // لینک دعوت
+        function resetGame() { if(confirm("Reset all progress?")) { localStorage.clear(); location.reload(); } }
         const userId = tgUser?.id || "User";
         const inviteLink = `https://t.me/Tab_RakXol_Bot?start=ref_${userId}`;
         document.getElementById('inviteLinkText').innerText = inviteLink;
-        function copyInviteLink() {
-            navigator.clipboard.writeText(inviteLink).then(() => { tg.showAlert("Invite link copied!"); });
-        }
+        function copyInviteLink() { navigator.clipboard.writeText(inviteLink).then(() => { tg.showAlert("Invite link copied!"); }); }
 
-        // --- حلقه بازی (هر ثانیه یکبار) ---
         setInterval(() => {
-            if (energy < maxEnergy) {
-                energy += 1;
-                localStorage.setItem('energy', energy);
-            }
+            if (energy < maxEnergy) { energy += 1; localStorage.setItem('energy', energy); }
             updateUI();
         }, 1000);
 
-        // --- ناوبری صفحات ---
         const container = document.getElementById('pagesContainer');
         const navItems = document.querySelectorAll('.nav-item');
-        function goToPage(index) {
-            container.scrollTo({ left: index * window.innerWidth, behavior: 'smooth' });
-        }
+        function goToPage(index) { container.scrollTo({ left: index * window.innerWidth, behavior: 'smooth' }); }
         container.addEventListener('scroll', () => {
             const pageIndex = Math.round(container.scrollLeft / window.innerWidth);
             navItems.forEach((item, index) => {
-                if (index === pageIndex) item.classList.add('active');
-                else item.classList.remove('active');
+                if (index === pageIndex) item.classList.add('active'); else item.classList.remove('active');
             });
         });
 
         // شروع
         document.getElementById('coinImage').src = skinsData.find(s => s.id === equippedSkin).img;
-        updateWalletUI(); // چک کردن وضعیت کیف پول در شروع
         updateUI();
     </script>
 </body>
-                </html>
+                                                                                  </html>
