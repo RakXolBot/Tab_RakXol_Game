@@ -43,6 +43,7 @@
         .score { font-size: 56px; font-weight: 900; color: #ffd700; text-shadow: 0 0 20px rgba(255,215,0,0.4); }
         .score-label { font-size: 14px; color: #888; margin-top: -5px; }
         .coin-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; width: 100%; position: relative; }
+        
         .coin {
             width: 220px; height: 220px; border-radius: 50%;
             background: conic-gradient(from 0deg, #ffd700, #ffed4e, #b8860b, #ffd700);
@@ -51,7 +52,13 @@
             cursor: pointer; transition: transform 0.05s ease; position: relative;
         }
         .coin:active { transform: scale(0.92); }
-        .coin img { width: 190px; height: 190px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.2); }
+        
+        #coinImage { 
+            width: 180px; height: 180px; object-fit: contain; 
+            filter: drop-shadow(0px 10px 10px rgba(0,0,0,0.5)); 
+            transition: all 0.3s ease;
+        }
+
         .tap-effect { position: absolute; color: #fff; font-weight: bold; font-size: 28px; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 10; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-80px) scale(1.5); } }
         
@@ -71,16 +78,19 @@
             background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;
         }
-        .card-info { display: flex; flex-direction: column; gap: 4px; width: 65%; }
+        .card.locked { opacity: 0.6; }
+        .card-info { display: flex; flex-direction: column; gap: 4px; width: 70%; }
         .card-title { font-weight: bold; font-size: 14px; }
         .card-desc { font-size: 11px; color: #aaa; }
-        .card-level { font-size: 12px; color: #00ffcc; margin-top: 2px; }
+        .card-ability { font-size: 11px; color: #00ffcc; margin-top: 4px; font-style: italic; }
+        .card-level { font-size: 12px; color: #ffd700; margin-top: 2px; font-weight: bold; }
         .card-price { color: #ffd700; font-weight: bold; font-size: 13px; }
         
         .action-btn {
             background: #ffd700; color: #000; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; font-size: 12px;
         }
         .action-btn:disabled { background: #555; color: #888; cursor: not-allowed; }
+        .action-btn.go-btn { background: #00aaff; color: white; } /* دکمه Go آبیه */
 
         /* --- بخش دوستان --- */
         .invite-box { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-size: 12px; color: #ccc; word-break: break-all; text-align: center; }
@@ -103,29 +113,48 @@
         .modal-btn { background: #ffd700; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 15px; cursor: pointer; font-size: 14px;}
         .modal-btn.danger { background: #ff4d4d; color: white; }
 
-        /* --- آمار (Profit) --- */
+        /* --- لیدربورد و آمار --- */
         .stat-box { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .stat-title { font-size: 14px; color: #aaa; }
         .stat-value { font-size: 18px; font-weight: bold; color: #ffd700; }
+        
+        .leader-item { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 8px; }
+        .leader-item.me { border: 1px solid #ffd700; background: rgba(255,215,0,0.1); }
+        .leader-rank { width: 30px; font-weight: bold; color: #aaa; }
+        .leader-name { flex: 1; font-weight: bold; }
+        .leader-score { color: #00ffcc; font-weight: bold; }
 
-        /* --- نوار ناوبری --- */
+        /* --- اسکین‌ها --- */
+        .skins-grid { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-bottom: 20px; overflow-y: auto; }
+        .skin-item {
+            background: rgba(255,255,255,0.05); border-radius: 12px; border: 2px solid rgba(255,255,255,0.1);
+            padding: 10px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
+            transition: all 0.2s; position: relative;
+        }
+        .skin-item.active { border-color: #ffd700; background: rgba(255,215,0,0.1); box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+        .skin-item img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 5px; }
+        .skin-name { font-size: 10px; font-weight: bold; text-align: center; color: #fff; }
+        .skin-price { font-size: 10px; color: #ffd700; font-weight: bold; margin-top: 2px; }
+        .skin-locked { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px;}
+
+        /* --- نوار ناوبری (۸ تا دکمه) --- */
         .bottom-nav {
             height: 65px; width: 100%; display: flex; justify-content: space-around; align-items: center;
             background: rgba(15, 20, 35, 0.95); border-top: 1px solid rgba(255,255,255,0.1); position: absolute; bottom: 0;
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 10px; color: #888; cursor: pointer; width: 16.66%; height: 100%; transition: color 0.2s;
+            font-size: 8px; color: #888; cursor: pointer; width: 12.5%; height: 100%; transition: color 0.2s;
         }
         .nav-item.active { color: #ffd700; }
-        .nav-icon { font-size: 20px; margin-bottom: 2px; }
+        .nav-icon { font-size: 18px; margin-bottom: 2px; }
     </style>
 </head>
 <body>
 
     <div class="pages-container" id="pagesContainer">
         
-        <!-- صفحه ۱: تسک‌ها -->
+        <!-- ۱. تسک‌ها -->
         <div class="page">
             <div class="page-title">Tasks</div>
             <div class="card" style="width: 100%; border-color: #ffd700; background: rgba(255,215,0,0.1); margin-bottom: 10px;">
@@ -139,7 +168,7 @@
             <div class="card-list" id="tasksList"></div>
         </div>
 
-        <!-- صفحه ۲: دوستان -->
+        <!-- ۲. دوستان -->
         <div class="page">
             <div class="page-title">Friends</div>
             <div class="card-list">
@@ -153,14 +182,16 @@
                     <div class="invite-box" id="inviteLinkText">Generating...</div>
                     <button class="action-btn" style="margin-top: 10px; width: 100%;" onclick="copyInviteLink()">Copy Link</button>
                 </div>
-                <div class="card" style="flex-direction: column; align-items: flex-start; background: rgba(0, 255, 204, 0.05);">
-                    <span class="card-title" style="color: #00ffcc; margin-bottom: 5px;">Your Inviter</span>
-                    <div class="friend-info"><span>@RakXolOfficial</span></div>
-                </div>
             </div>
         </div>
 
-        <!-- صفحه ۳: بازی اصلی -->
+        <!-- ۳. لیدربورد -->
+        <div class="page">
+            <div class="page-title">Leaderboard</div>
+            <div class="card-list" id="leaderboardList"></div>
+        </div>
+
+        <!-- ۴. بازی اصلی -->
         <div class="page">
             <div class="game-header">
                 <div class="settings-icon" onclick="openSettings()">⚙️</div>
@@ -175,7 +206,7 @@
             <div class="coin-wrapper">
                 <div class="combo-text" id="comboText">COMBO x2!</div>
                 <div class="coin" id="coin">
-                    <img src="coin.jpg" alt="Coin" onerror="this.src='https://i.imgur.com/8QO9Y3v.jpeg'">
+                    <img id="coinImage" src="coin1.png" alt="Coin" onerror="this.src='https://i.imgur.com/8QO9Y3v.jpeg'">
                 </div>
             </div>
 
@@ -185,14 +216,14 @@
             </div>
         </div>
 
-        <!-- صفحه ۴: ارتقا -->
+        <!-- ۵. ارتقا -->
         <div class="page">
             <div class="page-title">Upgrades</div>
             <div class="card-list">
                 <div class="card">
                     <div class="card-info">
                         <span class="card-title">Multitap</span>
-                        <span class="card-desc">Increase coins per tap</span>
+                        <span class="card-desc">Increase base coins per tap</span>
                         <span class="card-level">Lvl: <span id="multitapLvl">1</span></span>
                         <span class="card-price"><span id="multitapPrice">1,000</span> coins</span>
                     </div>
@@ -210,7 +241,7 @@
             </div>
         </div>
 
-        <!-- صفحه ۵: ماین (درآمد غیرفعال) -->
+        <!-- ۶. ماین (درآمد غیرفعال) -->
         <div class="page">
             <div class="page-title">Mine</div>
             <div class="card" style="width: 100%; border-color: #00ffcc; background: rgba(0,255,204,0.1); margin-bottom: 10px; flex-direction: column;">
@@ -224,7 +255,13 @@
             <div class="card-list" id="mineList"></div>
         </div>
 
-        <!-- صفحه ۶: Profit (آمار) -->
+        <!-- ۷. اسکین‌ها (Skins) -->
+        <div class="page">
+            <div class="page-title">Skins Collection</div>
+            <div class="skins-grid" id="skinsGrid"></div>
+        </div>
+
+        <!-- ۸. Profit (آمار) -->
         <div class="page">
             <div class="page-title">Profit Dashboard</div>
             <div class="card-list">
@@ -269,10 +306,12 @@
     <div class="bottom-nav">
         <div class="nav-item" onclick="goToPage(0)"><span class="nav-icon">📋</span><span>Tasks</span></div>
         <div class="nav-item" onclick="goToPage(1)"><span class="nav-icon">👥</span><span>Friends</span></div>
-        <div class="nav-item active" onclick="goToPage(2)"><span class="nav-icon">🪙</span><span>Game</span></div>
-        <div class="nav-item" onclick="goToPage(3)"><span class="nav-icon">⚡</span><span>Upgrades</span></div>
-        <div class="nav-item" onclick="goToPage(4)"><span class="nav-icon">⛏️</span><span>Mine</span></div>
-        <div class="nav-item" onclick="goToPage(5)"><span class="nav-icon">📈</span><span>Profit</span></div>
+        <div class="nav-item" onclick="goToPage(2)"><span class="nav-icon">🏆</span><span>Leaders</span></div>
+        <div class="nav-item active" onclick="goToPage(3)"><span class="nav-icon">🪙</span><span>Game</span></div>
+        <div class="nav-item" onclick="goToPage(4)"><span class="nav-icon">⚡</span><span>Upgrades</span></div>
+        <div class="nav-item" onclick="goToPage(5)"><span class="nav-icon">⛏️</span><span>Mine</span></div>
+        <div class="nav-item" onclick="goToPage(6)"><span class="nav-icon">🎨</span><span>Skins</span></div>
+        <div class="nav-item" onclick="goToPage(7)"><span class="nav-icon">📈</span><span>Profit</span></div>
     </div>
 
     <script>
@@ -280,7 +319,7 @@
         tg.ready();
         tg.expand();
 
-        // --- اوایل صدا (Audio API) ---
+        // --- اوایل صدا ---
         let audioCtx;
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -316,7 +355,7 @@
         
         let energy = parseInt(localStorage.getItem('energy') || '500');
         let maxEnergy = parseInt(localStorage.getItem('maxEnergy') || '500');
-        let coinsPerTap = parseInt(localStorage.getItem('coinsPerTap') || '1');
+        let baseCoinsPerTap = parseInt(localStorage.getItem('baseCoinsPerTap') || '1');
         
         let multitapLvl = parseInt(localStorage.getItem('multitapLvl') || '1');
         let multitapPrice = parseInt(localStorage.getItem('multitapPrice') || '1000');
@@ -324,6 +363,7 @@
         let energyPrice = parseInt(localStorage.getItem('energyPrice') || '1000');
 
         let claimedTasks = JSON.parse(localStorage.getItem('claimedTasks') || '[]');
+        let visitedLinks = JSON.parse(localStorage.getItem('visitedLinks') || '[]'); // لینک‌هایی که کاربر رفته
         let lastDailyClaim = parseInt(localStorage.getItem('lastDailyClaim') || '0');
         
         // تنظیمات
@@ -338,15 +378,69 @@
         let lastClickTime = 0;
         let comboCount = 0;
 
-        // ماین
+        // ================= سیستم ماین =================
         let lastMineCollect = parseInt(localStorage.getItem('lastMineCollect') || Date.now());
         let mineLevels = JSON.parse(localStorage.getItem('mineLevels') || '{"BankCard":0,"MiningRig":0,"Exchange":0}');
         
         const mineData = [
-            { id: "BankCard", name: "Bank Card", desc: "Basic passive income", basePrice: 2000, baseIncome: 50 },
-            { id: "MiningRig", name: "Mining Rig", desc: "Advanced passive income", basePrice: 10000, baseIncome: 250 },
-            { id: "Exchange", name: "Crypto Exchange", desc: "Massive passive income", basePrice: 50000, baseIncome: 1500 }
+            { id: "BankCard", name: "Bank Card", desc: "Basic passive income", ability: "Lvl 5: +5% Tap Power", basePrice: 50000, baseIncome: 250 },
+            { id: "MiningRig", name: "Mining Rig", desc: "Advanced passive income", ability: "Lvl 5: -10% Boost Cooldown", basePrice: 500000, baseIncome: 2500 },
+            { id: "Exchange", name: "Crypto Exchange", desc: "Massive passive income", ability: "Lvl 5: +10% Passive Income", basePrice: 5000000, baseIncome: 25000 }
         ];
+
+        function getCurrentTapPower() {
+            let power = baseCoinsPerTap;
+            if (mineLevels.BankCard >= 5) power = power * 1.05;
+            return Math.floor(power);
+        }
+
+        function getBoostCooldownTime() {
+            let baseCooldown = 60 * 60 * 1000;
+            if (mineLevels.MiningRig >= 5) baseCooldown = baseCooldown * 0.9;
+            return baseCooldown;
+        }
+
+        function getPassiveIncome() {
+            let income = 0;
+            mineData.forEach(card => { income += (card.baseIncome * mineLevels[card.id]); });
+            if (mineLevels.Exchange >= 5) income = income * 1.1;
+            return income;
+        }
+        // ==============================================
+
+        // ================= لیدربورد =================
+        const fakePlayers = [
+            { name: "Ali", score: 25000000 },
+            { name: "Sara", score: 18500000 },
+            { name: "Reza", score: 12000000 },
+            { name: "Nima", score: 8500000 },
+            { name: "Maryam", score: 5000000 },
+            { name: "Hossein", score: 2500000 },
+            { name: "Zahra", score: 1000000 },
+            { name: "Amir", score: 500000 },
+            { name: "Fatemeh", score: 250000 }
+        ];
+
+        function renderLeaderboard() {
+            const container = document.getElementById('leaderboardList');
+            container.innerHTML = '';
+            let allPlayers = [...fakePlayers, { name: tgUsername, score: totalEarned, isMe: true }];
+            allPlayers.sort((a, b) => b.score - a.score);
+
+            allPlayers.forEach((player, index) => {
+                let rank = index + 1;
+                let medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+                const div = document.createElement('div');
+                div.className = `leader-item ${player.isMe ? 'me' : ''}`;
+                div.innerHTML = `
+                    <span class="leader-rank">${medal}</span>
+                    <span class="leader-name">${player.name} ${player.isMe ? '(You)' : ''}</span>
+                    <span class="leader-score">${formatNumber(player.score)}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+        // ==========================================
 
         // --- آپدیت UI ---
         const formatNumber = (num) => Math.floor(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -364,17 +458,13 @@
             document.getElementById('buyMultitap').disabled = score < multitapPrice;
             document.getElementById('buyEnergy').disabled = score < energyPrice;
 
-            // دکمه روزانه
             const dailyBtn = document.getElementById('dailyBtn');
             if (Date.now() - lastDailyClaim < 24 * 60 * 60 * 1000) {
-                dailyBtn.disabled = true;
-                dailyBtn.innerText = "Claimed";
+                dailyBtn.disabled = true; dailyBtn.innerText = "Claimed";
             } else {
-                dailyBtn.disabled = false;
-                dailyBtn.innerText = "Claim";
+                dailyBtn.disabled = false; dailyBtn.innerText = "Claim";
             }
 
-            // بوست
             const boostBtn = document.getElementById('boostBtn');
             if (Date.now() < boostEndTime) {
                 boostBtn.innerText = `🚀 ${Math.ceil((boostEndTime - Date.now())/1000)}s LEFT`;
@@ -388,35 +478,61 @@
                 boostBtn.disabled = false;
             }
 
-            // آمار Profit
             document.getElementById('statTotalEarned').innerText = formatNumber(totalEarned);
             document.getElementById('statTaps').innerText = formatNumber(totalTaps);
             document.getElementById('statBalance').innerText = formatNumber(score);
             
-            let currentIncome = 0;
-            mineData.forEach(card => { currentIncome += (card.baseIncome * mineLevels[card.id]); });
+            let currentIncome = getPassiveIncome();
             document.getElementById('passiveRate').innerText = formatNumber(currentIncome) + ' / hr';
             document.getElementById('statPassive').innerText = formatNumber(currentIncome) + ' / hr';
 
-            // تسک‌ها
             renderTasks();
             renderMine();
+            renderSkins();
+            renderLeaderboard();
         }
 
-        // --- رندر تسک‌ها ---
+        // ================= سیستم تسک‌های هوشمند =================
         const tasksData = [
-            { title: "Follow YouTube", desc: "Subscribe to our channel", reward: 5000 },
-            { title: "Join Telegram", desc: "Join our community channel", reward: 5000 },
-            { title: "Invite 1 Friend", desc: "Bring a friend to the game", reward: 10000 },
-            { title: "Tap 1000 Times", desc: "Reach 1,000 total taps", reward: 2000 },
-            { title: "Upgrade Multitap", desc: "Buy your first Multitap upgrade", reward: 3000 },
-            { title: "Upgrade Energy", desc: "Buy your first Energy upgrade", reward: 3000 }
+            { id: 'yt', title: "Follow YouTube", desc: "Subscribe to our channel", reward: 5000, type: 'link', url: 'https://www.youtube.com/@RakXolOffician' },
+            { id: 'tg', title: "Join Telegram", desc: "Join our community channel", reward: 5000, type: 'link', url: 'https://t.me/RakXolCommunity' },
+            { id: 'tap_1k', title: "Tap 1000 Times", desc: "Reach 1,000 total taps", reward: 2000, type: 'taps', target: 1000 },
+            { id: 'tap_10k', title: "Tap 10,000 Times", desc: "Reach 10,000 total taps", reward: 25000, type: 'taps', target: 10000 },
+            { id: 'upgrade_m', title: "Upgrade Multitap", desc: "Buy 1 Multitap upgrade", reward: 3000, type: 'multitap', target: 2 },
+            { id: 'buy_mine', title: "Buy Bank Card", desc: "Buy the first mining card", reward: 10000, type: 'mine', target: 'BankCard', level: 1 }
         ];
+
         function renderTasks() {
             const container = document.getElementById('tasksList');
             container.innerHTML = '';
-            tasksData.forEach((task, index) => {
-                const isClaimed = claimedTasks.includes(index);
+            
+            tasksData.forEach((task) => {
+                const isClaimed = claimedTasks.includes(task.id);
+                let isCompleted = false;
+                let btnHtml = '';
+
+                // بررسی وضعیت انجام شدن تسک
+                if (task.type === 'link') {
+                    isCompleted = visitedLinks.includes(task.id);
+                } else if (task.type === 'taps') {
+                    isCompleted = totalTaps >= task.target;
+                } else if (task.type === 'multitap') {
+                    isCompleted = multitapLvl >= task.target;
+                } else if (task.type === 'mine') {
+                    isCompleted = mineLevels[task.target] >= task.level;
+                }
+
+                // ساخت دکمه بر اساس وضعیت
+                if (isClaimed) {
+                    btnHtml = `<button class="action-btn" disabled>Done</button>`;
+                } else if (isCompleted) {
+                    btnHtml = `<button class="action-btn" onclick="claimTask('${task.id}')">Claim</button>`;
+                } else if (task.type === 'link') {
+                    btnHtml = `<button class="action-btn go-btn" onclick="handleTaskGo('${task.id}', '${task.url}')">Go</button>`;
+                } else {
+                    btnHtml = `<button class="action-btn" disabled>🔒 Locked</button>`;
+                }
+
                 const div = document.createElement('div');
                 div.className = 'card';
                 div.innerHTML = `
@@ -425,48 +541,86 @@
                         <span class="card-desc">${task.desc}</span>
                         <span class="card-price">+${formatNumber(task.reward)} Coins</span>
                     </div>
-                    <button class="action-btn" onclick="claimTask(${index})" ${isClaimed ? 'disabled' : ''}>${isClaimed ? 'Done' : 'Claim'}</button>
+                    ${btnHtml}
                 `;
                 container.appendChild(div);
             });
         }
-        function claimTask(index) {
-            if (!claimedTasks.includes(index)) {
-                score += tasksData[index].reward; totalEarned += tasksData[index].reward;
-                claimedTasks.push(index);
-                localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('claimedTasks', JSON.stringify(claimedTasks));
-                playTone(800, 'sine', 0.2);
-                updateUI();
+
+        function handleTaskGo(id, url) {
+            tg.openLink(url); // باز کردن لینک در تلگرام
+            if (!visitedLinks.includes(id)) {
+                visitedLinks.push(id);
+                localStorage.setItem('visitedLinks', JSON.stringify(visitedLinks));
             }
+            // بعد از بازگشت از لینک، دکمه Claim میشه
+            setTimeout(() => { renderTasks(); }, 1000); 
         }
+
+        function claimTask(id) {
+            if (claimedTasks.includes(id)) return;
+            
+            const task = tasksData.find(t => t.id === id);
+            score += task.reward; 
+            totalEarned += task.reward;
+            claimedTasks.push(id);
+            
+            localStorage.setItem('score', score); 
+            localStorage.setItem('totalEarned', totalEarned); 
+            localStorage.setItem('claimedTasks', JSON.stringify(claimedTasks));
+            
+            playTone(800, 'sine', 0.2);
+            updateUI();
+        }
+        // ========================================================
 
         // --- رندر ماین ---
         function renderMine() {
             const container = document.getElementById('mineList');
             container.innerHTML = '';
-            mineData.forEach((card) => {
+            
+            mineData.forEach((card, index) => {
                 const lvl = mineLevels[card.id];
                 const price = Math.floor(card.basePrice * Math.pow(2, lvl));
-                const income = card.baseIncome * (lvl + 1); // نمایش درآمد بعدی
                 
+                let isLocked = false;
+                let lockReason = "";
+                if (index === 1 && mineLevels.BankCard === 0) { isLocked = true; lockReason = "Buy Bank Card first"; }
+                if (index === 2 && mineLevels.MiningRig === 0) { isLocked = true; lockReason = "Buy Mining Rig first"; }
+
                 const div = document.createElement('div');
-                div.className = 'card';
+                div.className = `card ${isLocked ? 'locked' : ''}`;
+                
+                let btnHtml = "";
+                if (isLocked) {
+                    btnHtml = `<button class="action-btn" disabled>🔒 Locked</button>`;
+                } else {
+                    btnHtml = `<button class="action-btn" onclick="buyMine('${card.id}')" ${score < price ? 'disabled' : ''}>Buy</button>`;
+                }
+
                 div.innerHTML = `
                     <div class="card-info">
                         <span class="card-title">${card.name}</span>
                         <span class="card-desc">${card.desc}</span>
-                        <span class="card-level">Lvl: ${lvl} (+${formatNumber(income)}/hr)</span>
+                        <span class="card-level">Lvl: ${lvl} ${isLocked ? `(${lockReason})` : ''}</span>
+                        <span class="card-ability">${card.ability}</span>
                         <span class="card-price">${formatNumber(price)} coins</span>
                     </div>
-                    <button class="action-btn" onclick="buyMine('${card.id}')" ${score < price ? 'disabled' : ''}>Buy</button>
+                    ${btnHtml}
                 `;
                 container.appendChild(div);
             });
         }
+
         function buyMine(id) {
-            const card = mineData.find(c => c.id === id);
+            const index = mineData.findIndex(c => c.id === id);
+            const card = mineData[index];
             const lvl = mineLevels[id];
             const price = Math.floor(card.basePrice * Math.pow(2, lvl));
+            
+            if (index === 1 && mineLevels.BankCard === 0) return;
+            if (index === 2 && mineLevels.MiningRig === 0) return;
+
             if (score >= price) {
                 score -= price;
                 mineLevels[id]++;
@@ -476,12 +630,12 @@
                 updateUI();
             }
         }
+        
         function collectMine() {
             let now = Date.now();
             let timePassed = now - lastMineCollect;
             let hoursPassed = timePassed / (1000 * 60 * 60);
-            let currentIncome = 0;
-            mineData.forEach(card => { currentIncome += (card.baseIncome * mineLevels[card.id]); });
+            let currentIncome = getPassiveIncome();
             
             let earned = Math.floor(currentIncome * hoursPassed);
             if (earned > 0) {
@@ -489,18 +643,77 @@
                 lastMineCollect = now;
                 localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('lastMineCollect', lastMineCollect);
                 playTone(1000, 'sine', 0.3);
-                tg.showAlert(`Collected ${formatNumber(earned)} coins from passive income!`);
+                tg.showAlert(`Collected ${formatNumber(earned)} coins!`);
                 updateUI();
             } else {
                 tg.showAlert("Not enough time passed to collect. Wait a bit!");
             }
         }
 
+        // --- اسکین‌ها ---
+        const skinsData = [
+            { id: 1, name: "1 Dollar", price: 0, img: "coin1.png" },
+            { id: 2, name: "10 Dollars", price: 10000, img: "coin2.png" },
+            { id: 3, name: "100 Dollars", price: 30000, img: "coin3.png" },
+            { id: 4, name: "2x 100", price: 75000, img: "coin4.png" },
+            { id: 5, name: "3x 100", price: 150000, img: "coin5.png" },
+            { id: 6, name: "Stack", price: 350000, img: "coin6.png" },
+            { id: 7, name: "2 Stacks", price: 800000, img: "coin7.png" },
+            { id: 8, name: "Money Bag", price: 2000000, img: "coin8.png" },
+            { id: 9, name: "Bags", price: 5000000, img: "coin9.png" },
+            { id: 10, name: "Bitcoin", price: 12000000, img: "coin10.png" }
+        ];
+        let unlockedSkins = JSON.parse(localStorage.getItem('unlockedSkins') || '[1]');
+        let equippedSkin = parseInt(localStorage.getItem('equippedSkin') || '1');
+
+        function renderSkins() {
+            const grid = document.getElementById('skinsGrid');
+            grid.innerHTML = '';
+            skinsData.forEach(skin => {
+                const isUnlocked = unlockedSkins.includes(skin.id);
+                const isEquipped = equippedSkin === skin.id;
+                const div = document.createElement('div');
+                div.className = `skin-item ${isEquipped ? 'active' : ''}`;
+                div.onclick = () => handleSkinClick(skin.id, isUnlocked, skin.price);
+                let lockOverlay = !isUnlocked ? `<div class="skin-locked">🔒</div>` : '';
+                div.innerHTML = `
+                    ${lockOverlay}
+                    <img src="${skin.img}" onerror="this.src='https://i.imgur.com/8QO9Y3v.jpeg'">
+                    <span class="skin-name">${skin.name}</span>
+                    <span class="skin-price">${isUnlocked ? (isEquipped ? 'EQUIPPED' : 'EQUIP') : formatNumber(skin.price)}</span>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function handleSkinClick(id, isUnlocked, price) {
+            if (isUnlocked) {
+                if (equippedSkin !== id) {
+                    equippedSkin = id;
+                    localStorage.setItem('equippedSkin', equippedSkin);
+                    document.getElementById('coinImage').src = skinsData.find(s => s.id === id).img;
+                    renderSkins(); playTone(800, 'sine', 0.2);
+                }
+            } else {
+                if (score >= price) {
+                    score -= price;
+                    localStorage.setItem('score', score);
+                    unlockedSkins.push(id);
+                    localStorage.setItem('unlockedSkins', JSON.stringify(unlockedSkins));
+                    equippedSkin = id;
+                    localStorage.setItem('equippedSkin', equippedSkin);
+                    document.getElementById('coinImage').src = skinsData.find(s => s.id === id).img;
+                    renderSkins(); updateUI(); playTone(1200, 'sine', 0.3);
+                    tg.showAlert(`Unlocked ${skinsData.find(s => s.id === id).name}!`);
+                } else { tg.showAlert("Not enough coins!"); }
+            }
+        }
+
         // --- بوست ---
         function activateBoost() {
             if (Date.now() < boostCooldownEnd || Date.now() < boostEndTime) return;
-            boostEndTime = Date.now() + 10000; // 10s
-            boostCooldownEnd = Date.now() + (60 * 60 * 1000); // 1 hr
+            boostEndTime = Date.now() + 10000;
+            boostCooldownEnd = Date.now() + getBoostCooldownTime();
             localStorage.setItem('boostEndTime', boostEndTime);
             localStorage.setItem('boostCooldownEnd', boostCooldownEnd);
             playTone(1200, 'sine', 0.4);
@@ -518,12 +731,8 @@
             let isBoosted = now < boostEndTime;
             let multiplier = 1;
 
-            // منطق کمبو
-            if (now - lastClickTime < 600) {
-                comboCount++;
-            } else {
-                comboCount = 1;
-            }
+            if (now - lastClickTime < 600) comboCount++;
+            else comboCount = 1;
             lastClickTime = now;
 
             if (comboCount >= 30) multiplier = 3;
@@ -537,7 +746,8 @@
             }
 
             let finalMult = isBoosted ? 5 : multiplier;
-            let earn = Math.floor(coinsPerTap * finalMult);
+            let currentTapPower = getCurrentTapPower();
+            let earn = Math.floor(currentTapPower * finalMult);
 
             score += earn;
             totalEarned += earn;
@@ -550,11 +760,10 @@
             localStorage.setItem('energy', energy);
             
             updateUI();
-            playTone(800 + (comboCount*10), 'square', 0.05); // صدای کلیک با فرکانس متغیر
+            playTone(800 + (comboCount*10), 'square', 0.05);
 
             if (tg.HapticFeedback && hapticsOn) tg.HapticFeedback.impactOccurred('light');
 
-            // افکت متن شناور
             const x = e.clientX || (window.innerWidth / 2);
             const y = e.clientY || (window.innerHeight / 2);
             const effect = document.createElement('div');
@@ -578,9 +787,9 @@
         }
         function buyMultitap() {
             if (score >= multitapPrice) {
-                score -= multitapPrice; multitapLvl++; coinsPerTap++;
+                score -= multitapPrice; multitapLvl++; baseCoinsPerTap++;
                 multitapPrice = Math.floor(multitapPrice * 1.5);
-                localStorage.setItem('score', score); localStorage.setItem('coinsPerTap', coinsPerTap); localStorage.setItem('multitapLvl', multitapLvl); localStorage.setItem('multitapPrice', multitapPrice);
+                localStorage.setItem('score', score); localStorage.setItem('baseCoinsPerTap', baseCoinsPerTap); localStorage.setItem('multitapLvl', multitapLvl); localStorage.setItem('multitapPrice', multitapPrice);
                 playTone(600, 'square', 0.2);
                 updateUI();
             }
@@ -613,9 +822,7 @@
         const inviteLink = `https://t.me/Tab_RakXol_Bot?start=ref_${userId}`;
         document.getElementById('inviteLinkText').innerText = inviteLink;
         function copyInviteLink() {
-            navigator.clipboard.writeText(inviteLink).then(() => {
-                tg.showAlert("Invite link copied!");
-            });
+            navigator.clipboard.writeText(inviteLink).then(() => { tg.showAlert("Invite link copied!"); });
         }
 
         // --- حلقه بازی (هر ثانیه یکبار) ---
@@ -642,7 +849,8 @@
         });
 
         // شروع
+        document.getElementById('coinImage').src = skinsData.find(s => s.id === equippedSkin).img;
         updateUI();
     </script>
 </body>
-</html>
+    </html>
