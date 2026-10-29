@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tab RakXol</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- کتابخانه Web3 برای اتصال به کیف پول -->
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js" type="application/javascript"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body {
@@ -45,7 +47,7 @@
         .coin-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; width: 100%; position: relative; }
         
         .coin {
-            width: 220px; height: 220px; border-radius: 50%;
+            width: 240px; height: 240px; border-radius: 50%;
             background: conic-gradient(from 0deg, #ffd700, #ffed4e, #b8860b, #ffd700);
             display: flex; justify-content: center; align-items: center;
             box-shadow: 0 0 60px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(0,0,0,0.5);
@@ -53,9 +55,10 @@
         }
         .coin:active { transform: scale(0.92); }
         
+        /* بزرگ‌تر شدن عکس سکه */
         #coinImage { 
-            width: 180px; height: 180px; object-fit: contain; 
-            filter: drop-shadow(0px 10px 10px rgba(0,0,0,0.5)); 
+            width: 200px; height: 200px; object-fit: contain; 
+            filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.6)); 
             transition: all 0.3s ease;
         }
 
@@ -90,7 +93,7 @@
             background: #ffd700; color: #000; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; font-size: 12px;
         }
         .action-btn:disabled { background: #555; color: #888; cursor: not-allowed; }
-        .action-btn.go-btn { background: #00aaff; color: white; } /* دکمه Go آبیه */
+        .action-btn.go-btn { background: #00aaff; color: white; }
 
         /* --- بخش دوستان --- */
         .invite-box { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-size: 12px; color: #ccc; word-break: break-all; text-align: center; }
@@ -124,6 +127,29 @@
         .leader-name { flex: 1; font-weight: bold; }
         .leader-score { color: #00ffcc; font-weight: bold; }
 
+        /* --- Crypto Exchange (کیف پول) --- */
+        .crypto-wallet { width: 100%; background: linear-gradient(135deg, #3b1c6b, #1e2a4a); border: 1px solid #aa66ff; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 0 20px rgba(170, 102, 255, 0.2); }
+        .crypto-title { font-size: 18px; color: #fff; font-weight: bold; margin-bottom: 15px; text-align: center; }
+        
+        .connect-wallet-btn {
+            background: #ff8c00; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 14px; margin-bottom: 15px;
+            box-shadow: 0 0 15px rgba(255, 140, 0, 0.4);
+        }
+        .connect-wallet-btn.connected { background: #00ffcc; color: #000; box-shadow: 0 0 15px rgba(0, 255, 204, 0.4); }
+
+        .crypto-select {
+            width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.5); color: white; border: 1px solid #aa66ff;
+            font-size: 13px; font-weight: bold; margin-bottom: 10px; outline: none;
+        }
+        .crypto-select option { background: #1e2a4a; color: white; }
+
+        .exchange-btn { background: #aa66ff; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 13px; margin-top: 5px; text-align: center; }
+        .exchange-btn:disabled { background: #555; color: #888; }
+
+        .holdings-title { font-size: 14px; color: #aaa; margin-top: 15px; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+        .holding-item { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; color: #fff; }
+        .holding-val { color: #00ffcc; font-weight: bold; }
+
         /* --- اسکین‌ها --- */
         .skins-grid { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-bottom: 20px; overflow-y: auto; }
         .skin-item {
@@ -137,7 +163,7 @@
         .skin-price { font-size: 10px; color: #ffd700; font-weight: bold; margin-top: 2px; }
         .skin-locked { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px;}
 
-        /* --- نوار ناوبری (۸ تا دکمه) --- */
+        /* --- نوار ناوبری --- */
         .bottom-nav {
             height: 65px; width: 100%; display: flex; justify-content: space-around; align-items: center;
             background: rgba(15, 20, 35, 0.95); border-top: 1px solid rgba(255,255,255,0.1); position: absolute; bottom: 0;
@@ -241,7 +267,7 @@
             </div>
         </div>
 
-        <!-- ۶. ماین (درآمد غیرفعال) -->
+        <!-- ۶. ماین -->
         <div class="page">
             <div class="page-title">Mine</div>
             <div class="card" style="width: 100%; border-color: #00ffcc; background: rgba(0,255,204,0.1); margin-bottom: 10px; flex-direction: column;">
@@ -255,31 +281,52 @@
             <div class="card-list" id="mineList"></div>
         </div>
 
-        <!-- ۷. اسکین‌ها (Skins) -->
+        <!-- ۷. اسکین‌ها -->
         <div class="page">
             <div class="page-title">Skins Collection</div>
             <div class="skins-grid" id="skinsGrid"></div>
         </div>
 
-        <!-- ۸. Profit (آمار) -->
+        <!-- ۸. Profit (آمار + صرافی + کیف پول) -->
         <div class="page">
             <div class="page-title">Profit Dashboard</div>
             <div class="card-list">
+                
+                <!-- صرافی و اتصال کیف پول -->
+                <div class="crypto-wallet">
+                    <div class="crypto-title">💼 Crypto Exchange</div>
+                    
+                    <!-- دکمه اتصال کیف پول -->
+                    <button id="connectWalletBtn" class="connect-wallet-btn" onclick="connectWallet()">Connect Web3 Wallet</button>
+
+                    <select id="cryptoSelect" class="crypto-select" onchange="updateUI()">
+                        <option value="SHIB">Shiba Inu (SHIB) - 1K Coins | MetaMask</option>
+                        <option value="DOGE">Dogecoin (DOGE) - 2K Coins | Trust Wallet</option>
+                        <option value="TRX">TRON (TRX) - 4K Coins | TronLink</option>
+                        <option value="XLM">Stellar (XLM) - 5K Coins | Exodus</option>
+                        <option value="ADA">Cardano (ADA) - 8K Coins | Yoroi</option>
+                        <option value="MATIC">Polygon (MATIC) - 10K Coins | MetaMask</option>
+                        <option value="VET">VeChain (VET) - 12K Coins | VeChainThor</option>
+                        <option value="KAS">Kaspa (KAS) - 15K Coins | Coin Wallet</option>
+                        <option value="CRO">Cronos (CRO) - 18K Coins | Crypto.com</option>
+                        <option value="HBAR">Hedera (HBAR) - 20K Coins | HashPack</option>
+                    </select>
+
+                    <button class="exchange-btn" id="exchangeBtn" onclick="exchangeCoins()">Exchange Coins</button>
+                    
+                    <!-- لیست دارایی‌ها -->
+                    <div id="cryptoHoldings">
+                        <!-- JS اینجا لیست رو میسازه -->
+                    </div>
+                </div>
+
                 <div class="stat-box">
                     <span class="stat-title">Total Coins Earned</span>
                     <span class="stat-value" id="statTotalEarned">0</span>
                 </div>
                 <div class="stat-box">
-                    <span class="stat-title">Passive Income</span>
-                    <span class="stat-value" id="statPassive">0 / hr</span>
-                </div>
-                <div class="stat-box">
                     <span class="stat-title">Total Taps</span>
                     <span class="stat-value" id="statTaps">0</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-title">Current Balance</span>
-                    <span class="stat-value" id="statBalance">0</span>
                 </div>
             </div>
         </div>
@@ -363,9 +410,29 @@
         let energyPrice = parseInt(localStorage.getItem('energyPrice') || '1000');
 
         let claimedTasks = JSON.parse(localStorage.getItem('claimedTasks') || '[]');
-        let visitedLinks = JSON.parse(localStorage.getItem('visitedLinks') || '[]'); // لینک‌هایی که کاربر رفته
+        let visitedLinks = JSON.parse(localStorage.getItem('visitedLinks') || '[]');
         let lastDailyClaim = parseInt(localStorage.getItem('lastDailyClaim') || '0');
         
+        // کیف پول ارزهای دیجیتال
+        let cryptoBalances = JSON.parse(localStorage.getItem('cryptoBalances') || '{"SHIB":0,"DOGE":0,"TRX":0,"XLM":0,"ADA":0,"MATIC":0,"VET":0,"KAS":0,"CRO":0,"HBAR":0}');
+        
+        // آدرس کیف پول کاربر (Web3)
+        let userWalletAddress = localStorage.getItem('userWalletAddress') || null;
+
+        // قیمت‌های ارزان برای بازی
+        const cryptoPrices = {
+            "SHIB": 1000,
+            "DOGE": 2000,
+            "TRX": 4000,
+            "XLM": 5000,
+            "ADA": 8000,
+            "MATIC": 10000,
+            "VET": 12000,
+            "KAS": 15000,
+            "CRO": 18000,
+            "HBAR": 20000
+        };
+
         // تنظیمات
         let soundOn = localStorage.getItem('soundOn') !== 'false';
         let hapticsOn = localStorage.getItem('hapticsOn') !== 'false';
@@ -377,6 +444,55 @@
         // کمبو
         let lastClickTime = 0;
         let comboCount = 0;
+
+        // ================= سیستم اتصال کیف پول =================
+        async function connectWallet() {
+            // چک میکنیم که آیا کاربر کیف پول (مثل متامسک یا تراست ولت) داره یا نه
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    // درخواست دسترسی به حساب‌های کاربر
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    userWalletAddress = accounts[0];
+                    
+                    // ذخیره آدرس کیف پول
+                    localStorage.setItem('userWalletAddress', userWalletAddress);
+                    
+                    // آپدیت دکمه
+                    updateWalletUI();
+                    
+                    if (tg.HapticFeedback && hapticsOn) tg.HapticFeedback.notificationOccurred('success');
+                    tg.showAlert(`Wallet Connected!\n${userWalletAddress.slice(0,6)}...${userWalletAddress.slice(-4)}`);
+                    
+                } catch (error) {
+                    console.error(error);
+                    tg.showAlert("Connection failed. Please try again.");
+                }
+            } else {
+                // اگه کیف پول نداشت (مثلاً داخل وب ویو تلگرام بود بدون مرورگر کیف پول)
+                tg.showAlert("No Web3 wallet detected. Please open the game in MetaMask or Trust Wallet browser.");
+            }
+        }
+
+        function updateWalletUI() {
+            const btn = document.getElementById('connectWalletBtn');
+            if (userWalletAddress) {
+                btn.classList.add('connected');
+                btn.innerText = `✅ ${userWalletAddress.slice(0, 6)}...${userWalletAddress.slice(-4)}`;
+                btn.onclick = () => {
+                    // قابلیت قطع اتصال در صورت کلیک مجدد
+                    if(confirm("Do you want to disconnect your wallet?")) {
+                        localStorage.removeItem('userWalletAddress');
+                        userWalletAddress = null;
+                        updateWalletUI();
+                    }
+                };
+            } else {
+                btn.classList.remove('connected');
+                btn.innerText = "Connect Web3 Wallet";
+                btn.onclick = connectWallet;
+            }
+        }
+        // ========================================================
 
         // ================= سیستم ماین =================
         let lastMineCollect = parseInt(localStorage.getItem('lastMineCollect') || Date.now());
@@ -410,14 +526,10 @@
 
         // ================= لیدربورد =================
         const fakePlayers = [
-            { name: "Ali", score: 25000000 },
-            { name: "Sara", score: 18500000 },
-            { name: "Reza", score: 12000000 },
-            { name: "Nima", score: 8500000 },
-            { name: "Maryam", score: 5000000 },
-            { name: "Hossein", score: 2500000 },
-            { name: "Zahra", score: 1000000 },
-            { name: "Amir", score: 500000 },
+            { name: "Ali", score: 25000000 }, { name: "Sara", score: 18500000 },
+            { name: "Reza", score: 12000000 }, { name: "Nima", score: 8500000 },
+            { name: "Maryam", score: 5000000 }, { name: "Hossein", score: 2500000 },
+            { name: "Zahra", score: 1000000 }, { name: "Amir", score: 500000 },
             { name: "Fatemeh", score: 250000 }
         ];
 
@@ -478,13 +590,35 @@
                 boostBtn.disabled = false;
             }
 
+            // --- آپدیت صرافی ---
+            const selectedCoin = document.getElementById('cryptoSelect').value;
+            const currentPrice = cryptoPrices[selectedCoin];
+            const exchangeBtn = document.getElementById('exchangeBtn');
+            
+            if (score >= currentPrice) {
+                exchangeBtn.disabled = false;
+                exchangeBtn.innerText = `Buy 1 ${selectedCoin} for ${formatNumber(currentPrice)} Coins`;
+            } else {
+                exchangeBtn.disabled = true;
+                exchangeBtn.innerText = `Need ${formatNumber(currentPrice - score)} more Coins`;
+            }
+
+            const holdingsContainer = document.getElementById('cryptoHoldings');
+            holdingsContainer.innerHTML = '<div class="holdings-title">Your Assets</div>';
+            for (const [coin, amount] of Object.entries(cryptoBalances)) {
+                if (amount > 0) {
+                    holdingsContainer.innerHTML += `<div class="holding-item"><span>${coin}:</span><span class="holding-val">${formatNumber(amount)}</span></div>`;
+                }
+            }
+            if (Object.values(cryptoBalances).every(val => val === 0)) {
+                holdingsContainer.innerHTML += `<div style="font-size:12px; color:#888; text-align:center;">No crypto yet</div>`;
+            }
+
             document.getElementById('statTotalEarned').innerText = formatNumber(totalEarned);
             document.getElementById('statTaps').innerText = formatNumber(totalTaps);
-            document.getElementById('statBalance').innerText = formatNumber(score);
             
             let currentIncome = getPassiveIncome();
             document.getElementById('passiveRate').innerText = formatNumber(currentIncome) + ' / hr';
-            document.getElementById('statPassive').innerText = formatNumber(currentIncome) + ' / hr';
 
             renderTasks();
             renderMine();
@@ -492,7 +626,28 @@
             renderLeaderboard();
         }
 
-        // ================= سیستم تسک‌های هوشمند =================
+        // ================= تبدیل سکه به ارز =================
+        function exchangeCoins() {
+            const selectedCoin = document.getElementById('cryptoSelect').value;
+            const price = cryptoPrices[selectedCoin];
+            
+            if (score >= price) {
+                score -= price;
+                cryptoBalances[selectedCoin] += 1;
+                
+                localStorage.setItem('score', score);
+                localStorage.setItem('cryptoBalances', JSON.stringify(cryptoBalances));
+                
+                playTone(1200, 'sine', 0.4);
+                if (tg.HapticFeedback && hapticsOn) tg.HapticFeedback.notificationOccurred('success');
+                
+                tg.showAlert(`Success! You bought 1 ${selectedCoin} 🎉`);
+                updateUI();
+            }
+        }
+        // ==============================================================
+
+        // ================= سیستم تسک‌ها =================
         const tasksData = [
             { id: 'yt', title: "Follow YouTube", desc: "Subscribe to our channel", reward: 5000, type: 'link', url: 'https://www.youtube.com/@RakXolOffician' },
             { id: 'tg', title: "Join Telegram", desc: "Join our community channel", reward: 5000, type: 'link', url: 'https://t.me/RakXolCommunity' },
@@ -511,7 +666,6 @@
                 let isCompleted = false;
                 let btnHtml = '';
 
-                // بررسی وضعیت انجام شدن تسک
                 if (task.type === 'link') {
                     isCompleted = visitedLinks.includes(task.id);
                 } else if (task.type === 'taps') {
@@ -522,7 +676,6 @@
                     isCompleted = mineLevels[task.target] >= task.level;
                 }
 
-                // ساخت دکمه بر اساس وضعیت
                 if (isClaimed) {
                     btnHtml = `<button class="action-btn" disabled>Done</button>`;
                 } else if (isCompleted) {
@@ -548,27 +701,20 @@
         }
 
         function handleTaskGo(id, url) {
-            tg.openLink(url); // باز کردن لینک در تلگرام
+            tg.openLink(url);
             if (!visitedLinks.includes(id)) {
                 visitedLinks.push(id);
                 localStorage.setItem('visitedLinks', JSON.stringify(visitedLinks));
             }
-            // بعد از بازگشت از لینک، دکمه Claim میشه
             setTimeout(() => { renderTasks(); }, 1000); 
         }
 
         function claimTask(id) {
             if (claimedTasks.includes(id)) return;
-            
             const task = tasksData.find(t => t.id === id);
-            score += task.reward; 
-            totalEarned += task.reward;
+            score += task.reward; totalEarned += task.reward;
             claimedTasks.push(id);
-            
-            localStorage.setItem('score', score); 
-            localStorage.setItem('totalEarned', totalEarned); 
-            localStorage.setItem('claimedTasks', JSON.stringify(claimedTasks));
-            
+            localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('claimedTasks', JSON.stringify(claimedTasks));
             playTone(800, 'sine', 0.2);
             updateUI();
         }
@@ -850,7 +996,8 @@
 
         // شروع
         document.getElementById('coinImage').src = skinsData.find(s => s.id === equippedSkin).img;
+        updateWalletUI(); // چک کردن وضعیت کیف پول در شروع
         updateUI();
     </script>
 </body>
-    </html>
+                </html>
