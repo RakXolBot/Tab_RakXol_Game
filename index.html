@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tab RakXol</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- اسکریپت TON Connect -->
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         
-        /* بک‌گراند ساده آبی تیره (نسخه قبلی) */
+        /* بک‌گراند ساده آبی تیره */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background: radial-gradient(circle at top, #1e2a4a, #070b14);
@@ -169,7 +168,6 @@
                 </div>
                 <div class="card" style="flex-direction: column; align-items: center;">
                     <span class="card-title">Invite a friend</span>
-                    <!-- پاداش 100,000 سکه‌ای حفظ شد، دکمه تستی حذف شد -->
                     <span class="card-desc" style="text-align: center; margin-bottom: 5px; color: #00ffcc; font-weight: bold;">You and your friend both get 100,000 Coins!</span>
                     <div class="invite-box" id="inviteLinkText">Generating...</div>
                     <button class="action-btn" style="margin-top: 10px; width: 100%; background: #00ffcc;" onclick="copyInviteLink()">Copy Link</button>
@@ -306,7 +304,6 @@
     </div>
 
     <script>
-        // --- تنظیمات اولیه و ایمن‌سازی ---
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.ready(); tg.expand(); }
 
@@ -325,6 +322,43 @@
             setTimeout(() => { toast.remove(); }, 4000);
         }
 
+        // --- سیستم صدا (Web Audio API) ---
+        let audioCtx;
+        let soundOn = localStorage.getItem('soundOn') !== 'false';
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playTone(freq, type = 'sine', duration = 0.1) {
+            if (!soundOn) return;
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        function toggleSound() {
+            soundOn = !soundOn;
+            localStorage.setItem('soundOn', soundOn);
+            document.getElementById('soundStatus').innerText = soundOn ? 'ON' : 'OFF';
+            document.getElementById('soundStatus').style.color = soundOn ? '#00ffcc' : '#ff4d4d';
+            if(soundOn) playTone(800, 'sine', 0.1); // Play test sound
+        }
+        
+        // Initial settings UI
+        if(!soundOn) document.getElementById('soundStatus').innerText = 'OFF';
+
         // --- متغیرهای بازی ---
         let score = parseInt(localStorage.getItem('score') || '0');
         let totalEarned = parseInt(localStorage.getItem('totalEarned') || '0');
@@ -342,7 +376,6 @@
         let lastDailyClaim = parseInt(localStorage.getItem('lastDailyClaim') || '0');
         let cryptoBalances = JSON.parse(localStorage.getItem('cryptoBalances') || '{"SHIB":0,"DOGE":0,"TRX":0,"XLM":0,"ADA":0,"MATIC":0,"VET":0,"KAS":0,"CRO":0,"HBAR":0}');
         const cryptoPrices = {"SHIB": 1000, "DOGE": 2000, "TRX": 4000, "XLM": 5000, "ADA": 8000, "MATIC": 10000, "VET": 12000, "KAS": 15000, "CRO": 18000, "HBAR": 20000};
-        let soundOn = localStorage.getItem('soundOn') !== 'false';
         let hapticsOn = localStorage.getItem('hapticsOn') !== 'false';
         let boostEndTime = parseInt(localStorage.getItem('boostEndTime') || '0');
         let boostCooldownEnd = parseInt(localStorage.getItem('boostCooldownEnd') || '0');
@@ -360,7 +393,7 @@
         let lastWheelSpin = parseInt(localStorage.getItem('lastWheelSpin') || '0');
         const WHEEL_COOLDOWN = 3 * 60 * 60 * 1000;
 
-        // --- TON Connect (با مدیریت خطا) ---
+        // --- TON Connect ---
         const RECEIVER_ADDRESS = "UQDKwQKnM4T7ZaB8qCwaY7KAX7V_0B_crYcKpsHO0_vMuKyx";
         const TON_AMOUNT = 350000000;
         const REQUIRED_BALANCE = 370000000;
@@ -419,12 +452,17 @@
             if (Date.now() - lastWheelSpin < WHEEL_COOLDOWN) { showToast("Wheel is not ready yet!"); return; }
             const btn = document.getElementById('wheelBtn');
             if(!btn) return;
+            
             btn.innerText = "🎡 Spinning..."; btn.disabled = true;
+            playTone(800, 'square', 0.1); // Spin sound
+
             setTimeout(() => {
                 const rewards = [5000, 10000, 25000, 50000, 100000, 500000];
                 const reward = rewards[Math.floor(Math.random() * rewards.length)];
                 score += reward; totalEarned += reward; lastWheelSpin = Date.now();
                 localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('lastWheelSpin', lastWheelSpin);
+                
+                playTone(1200, 'sine', 0.4); // Win sound
                 showToast(`🎉 You won ${formatNumber(reward)} Coins!`);
                 btn.innerText = "🎡 Wheel"; updateUI();
             }, 1500);
@@ -586,6 +624,7 @@
             const task = tasksData.find(t => t.id === id);
             score += task.reward; totalEarned += task.reward; claimedTasks.push(id);
             localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('claimedTasks', JSON.stringify(claimedTasks));
+            playTone(1000, 'sine', 0.3); // Claim sound
             updateUI();
         }
 
@@ -599,6 +638,7 @@
                 score += reward; totalEarned += reward; lastDailyClaim = now;
                 localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); 
                 localStorage.setItem('lastDailyClaim', lastDailyClaim); localStorage.setItem('streak', streak);
+                playTone(1000, 'sine', 0.3); // Daily sound
                 showToast(`🎁 Daily reward claimed! +${formatNumber(reward)} coins.`);
                 updateUI();
             }
@@ -631,6 +671,7 @@
             if (score >= price) {
                 score -= price; mineLevels[id]++;
                 localStorage.setItem('score', score); localStorage.setItem('mineLevels', JSON.stringify(mineLevels));
+                playTone(600, 'square', 0.2); // Buy sound
                 updateUI();
             }
         }
@@ -641,6 +682,7 @@
             if (earned > 0) {
                 score += earned; totalEarned += earned; lastMineCollect = now;
                 localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('lastMineCollect', lastMineCollect);
+                playTone(1000, 'sine', 0.3); // Collect sound
                 showToast(`⛏️ Collected ${formatNumber(earned)} coins!`);
                 updateUI();
             } else { showToast("Wait a bit longer!"); }
@@ -675,7 +717,9 @@
             if (isUnlocked) {
                 if (equippedSkin !== id) {
                     equippedSkin = id; localStorage.setItem('equippedSkin', equippedSkin);
-                    document.getElementById('coinImage').src = skinsData.find(s => s.id === id).img; renderSkins();
+                    document.getElementById('coinImage').src = skinsData.find(s => s.id === id).img; 
+                    playTone(800, 'sine', 0.2); // Equip sound
+                    renderSkins();
                 }
             } else {
                 if (score >= price) {
@@ -683,6 +727,7 @@
                     unlockedSkins.push(id); localStorage.setItem('unlockedSkins', JSON.stringify(unlockedSkins));
                     equippedSkin = id; localStorage.setItem('equippedSkin', equippedSkin);
                     document.getElementById('coinImage').src = skinsData.find(s => s.id === id).img;
+                    playTone(1200, 'sine', 0.3); // Unlock sound
                     renderSkins(); updateUI(); showToast(`Unlocked ${skinsData.find(s => s.id === id).name}!`);
                 } else { showToast("Not enough coins!"); }
             }
@@ -692,6 +737,7 @@
             if (Date.now() < boostCooldownEnd || Date.now() < boostEndTime) return;
             boostEndTime = Date.now() + 10000; boostCooldownEnd = Date.now() + getBoostCooldownTime();
             localStorage.setItem('boostEndTime', boostEndTime); localStorage.setItem('boostCooldownEnd', boostCooldownEnd);
+            playTone(1200, 'sine', 0.4);
             updateUI();
         }
         
@@ -710,6 +756,10 @@
                 let finalMult = isBoosted ? 5 : multiplier; let earn = Math.floor(getCurrentTapPower() * finalMult);
                 score += earn; totalEarned += earn; totalTaps++; energy -= 1;
                 localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('totalTaps', totalTaps); localStorage.setItem('energy', energy);
+                
+                // صدای کلیک
+                playTone(600 + Math.random() * 200, 'square', 0.05);
+                
                 updateUI();
                 const x = e.clientX || (window.innerWidth / 2); const y = e.clientY || (window.innerHeight / 2);
                 const effect = document.createElement('div'); effect.className = 'tap-effect'; effect.innerText = '+' + earn;
@@ -724,6 +774,7 @@
             if (score >= price) {
                 score -= price; cryptoBalances[selectedCoin] += 1;
                 localStorage.setItem('score', score); localStorage.setItem('cryptoBalances', JSON.stringify(cryptoBalances));
+                playTone(800, 'sine', 0.2);
                 showToast(`🎉 Bought 1 ${selectedCoin}!`); updateUI();
             }
         }
@@ -766,4 +817,4 @@
         updateUI();
     </script>
 </body>
-    </html>
+</html>
