@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tab RakXol</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js" type="application/javascript"></script>
+    <!-- کتابخانه TON Connect -->
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
-        /* (استایل‌های قبلی اینجا هستند، برای کوتاه شدن پاسخ حذفشون کردم، دقیقاً همون استایل‌های کد قبلی رو کپی کن) */
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: radial-gradient(circle at top, #1e2a4a, #070b14); color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         .pages-container { display: flex; width: 100vw; height: calc(100vh - 65px); overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; }
@@ -83,8 +83,6 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; color: #888; cursor: pointer; width: 12.5%; height: 100%; }
         .nav-item.active { color: #ffd700; }
         .nav-icon { font-size: 18px; margin-bottom: 2px; }
-        
-        /* استایل‌های جدید برای سیفر و استریک */
         .cipher-input { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.5); color: #ffd700; border: 1px solid #ffd700; font-size: 16px; text-align: center; font-weight: bold; letter-spacing: 2px; margin-top: 10px; }
     </style>
 </head>
@@ -95,8 +93,6 @@
         <!-- ۱. تسک‌ها -->
         <div class="page">
             <div class="page-title">Tasks</div>
-            
-            <!-- Daily Check-in با استریک -->
             <div class="card" style="width: 100%; border-color: #ffd700; background: rgba(255,215,0,0.1); margin-bottom: 10px; flex-direction: column; align-items: flex-start;">
                 <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                     <div class="card-info">
@@ -106,15 +102,12 @@
                     <button class="action-btn" id="dailyBtn" onclick="claimDaily()">Claim</button>
                 </div>
             </div>
-
-            <!-- Daily Cipher (سیفر روزانه) -->
             <div class="card" style="width: 100%; border-color: #aa66ff; background: rgba(170,102,255,0.1); margin-bottom: 10px; flex-direction: column; align-items: flex-start;">
                 <span class="card-title" style="color: #aa66ff;">Daily Cipher</span>
                 <span class="card-desc">Type the secret word: <b>RAKXOL</b></span>
                 <input type="text" id="cipherInput" class="cipher-input" placeholder="ENTER CODE">
                 <button class="action-btn" style="margin-top: 10px; width: 100%; background: #aa66ff; color: white;" onclick="submitCipher()">Submit Cipher</button>
             </div>
-
             <div class="card-list" id="tasksList"></div>
         </div>
 
@@ -208,7 +201,7 @@
             <div class="skins-grid" id="skinsGrid"></div>
         </div>
 
-        <!-- ۸. Profit (آمار + صرافی + کیف پول) -->
+        <!-- ۸. Profit (آمار + صرافی + کیف پول TON) -->
         <div class="page">
             <div class="page-title">Profit Dashboard</div>
             <div class="card-list">
@@ -216,8 +209,10 @@
                 <div class="crypto-wallet">
                     <div class="crypto-title">💼 Crypto Exchange</div>
                     
-                    <!-- دکمه اتصال کیف پول با پرداخت ۰.۷ دلار -->
-                    <button id="connectWalletBtn" class="connect-wallet-btn" onclick="handleWalletConnectClick()">Connect Web3 Wallet ($0.70)</button>
+                    <!-- دکمه اتصال کیف پول TON و پرداخت 0.35 TON -->
+                    <button id="connectWalletBtn" class="connect-wallet-btn" onclick="handleTONConnect()">Connect Tonkeeper (0.35 TON)</button>
+                    <!-- کانتینر رسمی دکمه TON Connect -->
+                    <div id="ton-connect-button" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
 
                     <select id="cryptoSelect" class="crypto-select" onchange="updateUI()">
                         <option value="SHIB">Shiba Inu (SHIB) - 1K Coins | MetaMask</option>
@@ -257,33 +252,6 @@
         </div>
     </div>
 
-    <!-- مودال پرداخت کارت اعتباری -->
-    <div class="modal-overlay" id="paymentModal">
-        <div class="modal-content" style="border-color: #00aaff;">
-            <div class="modal-title" style="color: #00aaff;">Verify Wallet Connection</div>
-            <p style="font-size: 14px; margin-bottom: 15px; color: #ccc;">To prevent bot spam, a one-time verification fee of <b>$0.70</b> is required to connect your Web3 wallet.</p>
-            
-            <!-- فرم شبیه‌سازی شده Stripe (در واقعیت به Stripe Checkout وصل میشه) -->
-            <div style="background: #111; padding: 15px; border-radius: 8px; text-align: left; margin-bottom: 15px;">
-                <label style="font-size: 12px; color: #888;">Card Number</label>
-                <input type="text" placeholder="4242 4242 4242 4242" style="width: 100%; padding: 8px; background: #222; border: 1px solid #333; color: white; border-radius: 4px; margin-bottom: 10px;">
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;">
-                        <label style="font-size: 12px; color: #888;">Expiry</label>
-                        <input type="text" placeholder="MM/YY" style="width: 100%; padding: 8px; background: #222; border: 1px solid #333; color: white; border-radius: 4px;">
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 12px; color: #888;">CVC</label>
-                        <input type="text" placeholder="123" style="width: 100%; padding: 8px; background: #222; border: 1px solid #333; color: white; border-radius: 4px;">
-                    </div>
-                </div>
-            </div>
-
-            <button class="action-btn" style="width: 100%; background: #00aaff; color: white; padding: 12px;" onclick="simulatePayment()">Pay $0.70 Securely</button>
-            <button class="action-btn" style="width: 100%; background: transparent; color: #ff4d4d; margin-top: 10px;" onclick="closePaymentModal()">Cancel</button>
-        </div>
-    </div>
-
     <div class="bottom-nav">
         <div class="nav-item" onclick="goToPage(0)"><span class="nav-icon">📋</span><span>Tasks</span></div>
         <div class="nav-item" onclick="goToPage(1)"><span class="nav-icon">👥</span><span>Friends</span></div>
@@ -305,6 +273,83 @@
         document.getElementById('userTag').innerText = tgUsername;
         document.getElementById('myProfileId').innerText = tgUsername;
 
+        // --- تنظیمات TON Connect ---
+        // آدرس ولت مقصد (دریافت 0.35 TON)
+        const RECEIVER_ADDRESS = "UQDKwQKnM4T7ZaB8qCwaY7KAX7V_0B_crYcKpsHO0_vMuKyx";
+        const TON_AMOUNT = 350000000; // معادل 0.35 TON
+
+        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            manifestUrl: 'https://rakxolbot.github.io/Tab_RakXol_Game/tonconnect-manifest.json',
+            buttonRootId: 'ton-connect-button'
+        });
+
+        let userWalletAddress = localStorage.getItem('userWalletAddress') || null;
+        let hasPaidForWallet = localStorage.getItem('hasPaidForWallet') === 'true';
+
+        // تابع دکمه اتصال و پرداخت TON
+        async function handleTONConnect() {
+            try {
+                // اگر کاربر قبلا کیف پول را وصل کرده و پول داده
+                if (userWalletAddress && hasPaidForWallet) {
+                    if(confirm("Do you want to disconnect your wallet?")) {
+                        await tonConnectUI.disconnect();
+                        localStorage.removeItem('userWalletAddress');
+                        localStorage.removeItem('hasPaidForWallet');
+                        userWalletAddress = null;
+                        hasPaidForWallet = false;
+                        updateWalletUI();
+                    }
+                    return;
+                }
+
+                // ۱. درخواست اتصال کیف پول
+                if (!tonConnectUI.connected) {
+                    await tonConnectUI.openModal();
+                    // پس از اتصال، کاربر باید دوباره کلیک کند تا پرداخت انجام شود
+                    return; 
+                }
+
+                // ۲. انجام تراکنش (اگر وصل بود ولی پول نداده بود)
+                if (!hasPaidForWallet) {
+                    const transaction = {
+                        validUntil: Math.floor(Date.now() / 1000) + 600, // 10 دقیقه اعتبار
+                        messages: [
+                            {
+                                address: RECEIVER_ADDRESS,
+                                amount: TON_AMOUNT.toString()
+                            }
+                        ]
+                    };
+
+                    const result = await tonConnectUI.sendTransaction(transaction);
+                    
+                    // ۳. تایید پرداخت
+                    userWalletAddress = tonConnectUI.account.address;
+                    hasPaidForWallet = true;
+                    localStorage.setItem('userWalletAddress', userWalletAddress);
+                    localStorage.setItem('hasPaidForWallet', 'true');
+                    
+                    tg.showAlert("Payment Successful! 0.35 TON has been sent.");
+                    updateWalletUI();
+                }
+            } catch (error) {
+                console.error("TON Payment Error:", error);
+                tg.showAlert("Payment cancelled or failed. Please try again.");
+            }
+        }
+
+        function updateWalletUI() {
+            const btn = document.getElementById('connectWalletBtn');
+            if (userWalletAddress && hasPaidForWallet) {
+                btn.classList.add('connected');
+                btn.innerText = `✅ Connected (Paid)`;
+                btn.disabled = false; 
+            } else {
+                btn.classList.remove('connected');
+                btn.innerText = "Connect Tonkeeper (0.35 TON)";
+            }
+        }
+
         // --- متغیرهای بازی ---
         let score = parseInt(localStorage.getItem('score') || '0');
         let totalEarned = parseInt(localStorage.getItem('totalEarned') || '0');
@@ -321,14 +366,11 @@
         let claimedTasks = JSON.parse(localStorage.getItem('claimedTasks') || '[]');
         let visitedLinks = JSON.parse(localStorage.getItem('visitedLinks') || '[]');
         
-        // استریک و سیفر
         let streak = parseInt(localStorage.getItem('streak') || '0');
         let lastDailyClaim = parseInt(localStorage.getItem('lastDailyClaim') || '0');
         let cipherClaimed = localStorage.getItem('cipherClaimed') === 'true';
         
         let cryptoBalances = JSON.parse(localStorage.getItem('cryptoBalances') || '{"SHIB":0,"DOGE":0,"TRX":0,"XLM":0,"ADA":0,"MATIC":0,"VET":0,"KAS":0,"CRO":0,"HBAR":0}');
-        let userWalletAddress = localStorage.getItem('userWalletAddress') || null;
-        let hasPaidForWallet = localStorage.getItem('hasPaidForWallet') === 'true'; // وضعیت پرداخت
 
         const cryptoPrices = {"SHIB": 1000, "DOGE": 2000, "TRX": 4000, "XLM": 5000, "ADA": 8000, "MATIC": 10000, "VET": 12000, "KAS": 15000, "CRO": 18000, "HBAR": 20000};
         
@@ -401,10 +443,9 @@
             document.getElementById('buyMultitap').disabled = score < multitapPrice;
             document.getElementById('buyEnergy').disabled = score < energyPrice;
 
-            // آپدیت استریک
             document.getElementById('streakDisplay').innerText = streak;
             document.getElementById('streakDay').innerText = (streak % 7) + 1;
-            let reward = ((streak % 7) + 1) * 5000; // روز اول ۵ هزار، روز هفتم ۳۵ هزار
+            let reward = ((streak % 7) + 1) * 5000;
             document.getElementById('streakRewardText').innerText = formatNumber(reward);
 
             const dailyBtn = document.getElementById('dailyBtn');
@@ -414,7 +455,6 @@
                 dailyBtn.disabled = false; dailyBtn.innerText = "Claim";
             }
 
-            // آپدیت سیفر
             if (cipherClaimed) {
                 document.getElementById('cipherInput').disabled = true;
                 document.getElementById('cipherInput').placeholder = "Already Claimed";
@@ -439,8 +479,7 @@
             if (Object.values(cryptoBalances).every(val => val === 0)) holdingsContainer.innerHTML += `<div style="font-size:12px; color:#888; text-align:center;">No crypto yet</div>`;
 
             document.getElementById('statTotalEarned').innerText = formatNumber(totalEarned);
-            let currentIncome = getPassiveIncome();
-            document.getElementById('passiveRate').innerText = formatNumber(currentIncome) + ' / hr';
+            document.getElementById('passiveRate').innerText = formatNumber(getPassiveIncome()) + ' / hr';
 
             renderTasks();
             renderMine();
@@ -494,19 +533,15 @@
             let now = Date.now();
             let oneDay = 24 * 60 * 60 * 1000;
             if (now - lastDailyClaim >= oneDay) {
-                // چک کردن اینکه آیا دیروز آنلاین بوده (برای استریک)
-                if (now - lastDailyClaim < 2 * oneDay) {
-                    streak++;
-                } else {
-                    streak = 1; // اگه یک روز نیومده، استریک صفر شده و از ۱ شروع میشه
-                }
+                if (now - lastDailyClaim < 2 * oneDay) streak++;
+                else streak = 1;
                 let reward = (streak % 7 + 1) * 5000;
                 
                 score += reward; totalEarned += reward; lastDailyClaim = now;
                 localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); 
                 localStorage.setItem('lastDailyClaim', lastDailyClaim); localStorage.setItem('streak', streak);
                 
-                tg.showAlert(`Daily reward claimed! You got ${formatNumber(reward)} coins. Streak: ${streak}`);
+                tg.showAlert(`Daily reward claimed! You got ${formatNumber(reward)} coins.`);
                 updateUI();
             }
         }
@@ -560,8 +595,7 @@
         function collectMine() {
             let now = Date.now();
             let hoursPassed = (now - lastMineCollect) / (1000 * 60 * 60);
-            let currentIncome = getPassiveIncome();
-            let earned = Math.floor(currentIncome * hoursPassed);
+            let earned = Math.floor(getPassiveIncome() * hoursPassed);
             if (earned > 0) {
                 score += earned; totalEarned += earned; lastMineCollect = now;
                 localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('lastMineCollect', lastMineCollect);
@@ -639,67 +673,6 @@
             document.body.appendChild(effect); setTimeout(() => effect.remove(), 800);
         });
 
-        // --- سیستم پرداخت و کیف پول ---
-        function handleWalletConnectClick() {
-            if (userWalletAddress) {
-                // اگه قبلاً وصل کرده بود، قطع اتصال
-                if(confirm("Do you want to disconnect your wallet?")) {
-                    localStorage.removeItem('userWalletAddress'); userWalletAddress = null; updateWalletUI();
-                }
-                return;
-            }
-            
-            // اگه پول رو نداده بود، مودال پرداخت رو نشون بده
-            if (!hasPaidForWallet) {
-                document.getElementById('paymentModal').style.display = 'flex';
-            } else {
-                // اگه قبلاً پول داده بود، مستقیم بره برای اتصال
-                connectWallet();
-            }
-        }
-
-        function simulatePayment() {
-            // در واقعیت اینجا به Stripe Checkout هدایت میشه. ما اینجا شبیه‌سازیش می‌کنیم.
-            document.getElementById('paymentModal').style.display = 'none';
-            tg.showAlert("Payment Successful! $0.70 charged.");
-            hasPaidForWallet = true;
-            localStorage.setItem('hasPaidForWallet', 'true');
-            
-            // حالا برو برای اتصال کیف پول واقعی
-            connectWallet();
-        }
-
-        function closePaymentModal() {
-            document.getElementById('paymentModal').style.display = 'none';
-        }
-
-        async function connectWallet() {
-            if (typeof window.ethereum !== 'undefined') {
-                try {
-                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    userWalletAddress = accounts[0];
-                    localStorage.setItem('userWalletAddress', userWalletAddress);
-                    updateWalletUI();
-                    tg.showAlert(`Wallet Connected!\n${userWalletAddress.slice(0,6)}...${userWalletAddress.slice(-4)}`);
-                } catch (error) {
-                    tg.showAlert("Connection failed.");
-                }
-            } else {
-                tg.showAlert("No Web3 wallet detected. Open in MetaMask browser.");
-            }
-        }
-
-        function updateWalletUI() {
-            const btn = document.getElementById('connectWalletBtn');
-            if (userWalletAddress) {
-                btn.classList.add('connected');
-                btn.innerText = `✅ ${userWalletAddress.slice(0, 6)}...${userWalletAddress.slice(-4)}`;
-            } else {
-                btn.classList.remove('connected');
-                btn.innerText = hasPaidForWallet ? "Connect Web3 Wallet" : "Connect Web3 Wallet ($0.70)";
-            }
-        }
-
         // --- سایر توابع ---
         function exchangeCoins() {
             const selectedCoin = document.getElementById('cryptoSelect').value;
@@ -739,4 +712,4 @@
         updateUI();
     </script>
 </body>
-                                                                                  </html>
+</html>
