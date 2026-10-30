@@ -62,8 +62,10 @@
         .leader-score { color: #00ffcc; font-weight: bold; }
         .crypto-wallet { width: 100%; background: linear-gradient(135deg, #3b1c6b, #1e2a4a); border: 1px solid #aa66ff; border-radius: 15px; padding: 20px; margin-bottom: 15px; }
         .crypto-title { font-size: 18px; color: #fff; font-weight: bold; margin-bottom: 15px; text-align: center; }
-        .connect-wallet-btn { background: #ff8c00; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 14px; margin-bottom: 15px; }
-        .connect-wallet-btn.connected { background: #00ffcc; color: #000; }
+        
+        /* کانتینر دکمه آبی */
+        #ton-connect-button { display: flex; justify-content: center; margin-bottom: 15px; }
+
         .crypto-select { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.5); color: white; border: 1px solid #aa66ff; font-size: 13px; font-weight: bold; margin-bottom: 10px; outline: none; }
         .crypto-select option { background: #1e2a4a; color: white; }
         .exchange-btn { background: #aa66ff; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 13px; margin-top: 5px; }
@@ -194,8 +196,10 @@
             <div class="card-list">
                 <div class="crypto-wallet">
                     <div class="crypto-title">💼 Crypto Exchange</div>
-                    <button id="connectWalletBtn" class="connect-wallet-btn" onclick="handleTONConnect()">Connect & Pay (0.35 TON)</button>
+                    
+                    <!-- فقط دکمه آبی رسمی TON Connect -->
                     <div id="ton-connect-button" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
+
                     <select id="cryptoSelect" class="crypto-select" onchange="updateUI()">
                         <option value="SHIB">Shiba Inu (SHIB) - 1K Coins | MetaMask</option>
                         <option value="DOGE">Dogecoin (DOGE) - 2K Coins | Trust Wallet</option>
@@ -208,6 +212,7 @@
                         <option value="CRO">Cronos (CRO) - 18K Coins | Crypto.com</option>
                         <option value="HBAR">Hedera (HBAR) - 20K Coins | HashPack</option>
                     </select>
+
                     <button class="exchange-btn" id="exchangeBtn" onclick="exchangeCoins()">Exchange Coins</button>
                     <div id="cryptoHoldings"></div>
                 </div>
@@ -254,7 +259,7 @@
         // --- تنظیمات TON Connect ---
         const RECEIVER_ADDRESS = "UQDKwQKnM4T7ZaB8qCwaY7KAX7V_0B_crYcKpsHO0_vMuKyx";
         const TON_AMOUNT = 350000000; // 0.35 TON
-        const REQUIRED_BALANCE = 370000000; // 0.37 TON (0.35 + gas fee)
+        const REQUIRED_BALANCE = 370000000; // 0.37 TON
 
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://rakxolbot.github.io/Tab_RakXol_Game/tonconnect-manifest.json',
@@ -263,7 +268,6 @@
 
         let userWalletAddress = localStorage.getItem('userWalletAddress') || null;
         let hasPaidForWallet = localStorage.getItem('hasPaidForWallet') === 'true';
-        let isPendingPayment = false;
 
         const paymentTransaction = {
             validUntil: Math.floor(Date.now() / 1000) + 600,
@@ -275,68 +279,42 @@
             try {
                 const response = await fetch(`https://tonapi.io/v2/accounts/${address}`);
                 const data = await response.json();
-                const balanceInNano = BigInt(data.balance || 0);
-                return balanceInNano;
+                return BigInt(data.balance || 0);
             } catch (e) {
                 console.error("Error fetching balance", e);
-                return 0n; // در صورت خطا فرض میکنیم موجودی صفره
+                return 0n;
             }
         }
 
-        // لیسنر وضعیت: وقتی کیف پول وصل شد
+        // وقتی کیف پول وصل میشه (چه با دکمه آبی، چه توکن‌کیپر)
         tonConnectUI.onStatusChange(async (wallet) => {
-            if (wallet && isPendingPayment) {
-                isPendingPayment = false;
-                try {
-                    // ۱. گرفتن موجودی از شبکه
-                    const address = wallet.account.address;
-                    const balance = await checkBalance(address);
-                    const required = BigInt(REQUIRED_BALANCE);
+            if (wallet) {
+                // چک کردن اینکه آیا قبلا پول داده یا نه
+                if (hasPaidForWallet) return;
 
-                    if (balance < required) {
-                        tg.showAlert(`❌ Insufficient Balance!\n\nYou have: ${Number(balance) / 1e9} TON\nRequired: 0.37 TON\n\nPlease top up your wallet.`);
+                try {
+                    tg.showAlert("Checking your wallet balance...");
+                    const balance = await checkBalance(wallet.account.address);
+                    
+                    if (balance < BigInt(REQUIRED_BALANCE)) {
+                        // موجودی کمه
+                        tg.showAlert(`❌ Insufficient Balance!\n\nYou have: ${(Number(balance) / 1e9).toFixed(2)} TON\nRequired: 0.37 TON\n\nPlease top up your wallet and try again.`);
+                        
+                        // قطع اتصال
                         await tonConnectUI.disconnect();
                         return;
                     }
 
-                    // ۲. اگر موجودی کافی بود، تراکنش رو بفرست
-                    tg.showAlert("Balance verified. Please approve the transaction.");
+                    // موجودی کافیه، برو برای پرداخت
+                    tg.showAlert("Balance verified! Please approve the transaction.");
                     await tonConnectUI.sendTransaction(paymentTransaction);
+                    
                     markAsPaid(wallet.account.address);
-
                 } catch (e) {
                     tg.showAlert("Transaction failed: " + (e.message || "Cancelled by user."));
                 }
             }
         });
-
-        async function handleTONConnect() {
-            if (hasPaidForWallet) {
-                tg.showAlert("You have already paid and connected!");
-                return;
-            }
-
-            if (tonConnectUI.connected) {
-                try {
-                    tg.showAlert("Checking balance...");
-                    const balance = await checkBalance(tonConnectUI.account.address);
-                    
-                    if (balance < BigInt(REQUIRED_BALANCE)) {
-                        tg.showAlert(`❌ Insufficient Balance!\n\nYou have: ${Number(balance) / 1e9} TON\nRequired: 0.37 TON`);
-                        return;
-                    }
-
-                    tg.showAlert("Please approve the transaction in your wallet.");
-                    await tonConnectUI.sendTransaction(paymentTransaction);
-                    markAsPaid(tonConnectUI.account.address);
-                } catch (e) {
-                    tg.showAlert("Transaction failed: " + (e.message || "Cancelled."));
-                }
-            } else {
-                isPendingPayment = true;
-                await tonConnectUI.openModal();
-            }
-        }
 
         function markAsPaid(walletAddr) {
             userWalletAddress = walletAddr;
@@ -344,19 +322,6 @@
             localStorage.setItem('userWalletAddress', userWalletAddress);
             localStorage.setItem('hasPaidForWallet', 'true');
             tg.showAlert("✅ Payment Successful! Game unlocked.");
-            updateWalletUI();
-        }
-
-        function updateWalletUI() {
-            const btn = document.getElementById('connectWalletBtn');
-            if (userWalletAddress && hasPaidForWallet) {
-                btn.classList.add('connected');
-                btn.innerText = `✅ Connected (Paid)`;
-                btn.disabled = false; 
-            } else {
-                btn.classList.remove('connected');
-                btn.innerText = "Connect & Pay (0.35 TON)";
-            }
         }
 
         // --- متغیرهای بازی ---
@@ -484,7 +449,6 @@
             renderMine();
             renderSkins();
             renderLeaderboard();
-            updateWalletUI();
         }
 
         const tasksData = [
