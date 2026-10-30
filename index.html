@@ -230,8 +230,8 @@
                 <div class="crypto-wallet">
                     <div class="crypto-title">💼 Crypto Exchange</div>
                     
-                    <!-- دکمه اتصال کیف پول و پرداخت -->
-                    <button id="connectWalletBtn" class="connect-wallet-btn" onclick="handleTONConnect()">Connect Tonkeeper (0.35 TON)</button>
+                    <!-- دکمه اتصال کیف پول و پرداخت یک‌مرحله‌ای -->
+                    <button id="connectWalletBtn" class="connect-wallet-btn" onclick="handleTONConnect()">Connect & Pay (0.35 TON)</button>
                     <div id="ton-connect-button" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
 
                     <select id="cryptoSelect" class="crypto-select" onchange="updateUI()">
@@ -298,7 +298,6 @@
         const RECEIVER_ADDRESS = "UQDKwQKnM4T7ZaB8qCwaY7KAX7V_0B_crYcKpsHO0_vMuKyx";
         const TON_AMOUNT = 350000000; // 0.35 TON
 
-        // راه‌اندازی TON Connect
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://rakxolbot.github.io/Tab_RakXol_Game/tonconnect-manifest.json',
             buttonRootId: 'ton-connect-button'
@@ -307,32 +306,32 @@
         let userWalletAddress = localStorage.getItem('userWalletAddress') || null;
         let hasPaidForWallet = localStorage.getItem('hasPaidForWallet') === 'true';
 
-        // تابع اتصال و پرداخت
+        // تابع اتصال و پرداخت یک‌مرحله‌ای
         async function handleTONConnect() {
             if (hasPaidForWallet) {
                 tg.showAlert("You have already paid and connected!");
                 return;
             }
 
-            // پرسیدن از کاربر برای پرداخت خودکار یا دستی
-            if (confirm("Click OK to pay automatically with Tonkeeper.\nClick Cancel to pay manually from another wallet.")) {
-                // پرداخت خودکار (TonConnect)
+            const isAuto = confirm("Click OK to pay automatically with Tonkeeper.\nClick Cancel to pay manually from another wallet.");
+
+            if (isAuto) {
                 try {
-                    if (!tonConnectUI.connected) {
-                        await tonConnectUI.openModal();
-                        return;
-                    }
                     const transaction = {
                         validUntil: Math.floor(Date.now() / 1000) + 600,
                         messages: [{ address: RECEIVER_ADDRESS, amount: TON_AMOUNT.toString() }]
                     };
-                    await tonConnectUI.sendTransaction(transaction);
+                    
+                    // TON Connect به صورت خودکار اگر کیف پول وصل نباشد، اول درخواست اتصال می‌دهد
+                    // و بلافاصله پس از اتصال، پنجره تایید تراکنش را باز می‌کند.
+                    const result = await tonConnectUI.sendTransaction(transaction);
+                    
                     markAsPaid(tonConnectUI.account.address);
                 } catch (e) {
-                    tg.showAlert("Error: " + e.message);
+                    console.error(e);
+                    tg.showAlert("Transaction canceled or failed.");
                 }
             } else {
-                // پرداخت دستی
                 const manualPay = confirm("Please send EXACTLY 0.35 TON to this address:\n\n" + RECEIVER_ADDRESS + "\n\nAfter sending, press OK.");
                 if (manualPay) {
                     markAsPaid("MANUAL_WALLET_ADDRESS");
@@ -340,7 +339,6 @@
             }
         }
 
-        // ثبت موفقیت پرداخت
         function markAsPaid(walletAddr) {
             userWalletAddress = walletAddr;
             hasPaidForWallet = true;
@@ -358,7 +356,7 @@
                 btn.disabled = false; 
             } else {
                 btn.classList.remove('connected');
-                btn.innerText = "Connect Tonkeeper (0.35 TON)";
+                btn.innerText = "Connect & Pay (0.35 TON)";
             }
         }
 
