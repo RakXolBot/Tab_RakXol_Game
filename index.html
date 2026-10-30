@@ -220,13 +220,16 @@
         </div>
     </div>
 
+    <!-- مودال تنظیمات با دکمه ریست پرداخت -->
     <div class="modal-overlay" id="settingsModal">
         <div class="modal-content">
             <div class="modal-title">Settings</div>
             <div class="setting-item" onclick="toggleSound()">
                 <span>🔊 Sound Effect</span><span class="toggle-text" id="soundStatus" style="color: #00ffcc;">ON</span>
             </div>
-            <button class="modal-btn danger" onclick="resetGame()">Reset Progress</button>
+            <!-- دکمه ریست وضعیت پرداخت -->
+            <button class="modal-btn danger" onclick="resetPaymentStatus()" style="background: #ff8c00;">Reset Payment Status</button>
+            <button class="modal-btn danger" onclick="resetGame()">Reset All Progress</button>
             <button class="modal-btn" onclick="closeSettings()">Close</button>
         </div>
     </div>
@@ -255,7 +258,7 @@
         // --- تنظیمات TON Connect ---
         const RECEIVER_ADDRESS = "UQDKwQKnM4T7ZaB8qCwaY7KAX7V_0B_crYcKpsHO0_vMuKyx";
         const TON_AMOUNT = 350000000; // 0.35 TON
-        const REQUIRED_BALANCE = 370000000; // 0.37 TON (0.35 + gas fee)
+        const REQUIRED_BALANCE = 370000000; // 0.37 TON
 
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://rakxolbot.github.io/Tab_RakXol_Game/tonconnect-manifest.json',
@@ -270,60 +273,45 @@
             messages: [{ address: RECEIVER_ADDRESS, amount: TON_AMOUNT.toString() }]
         };
 
-        // تابع چک کردن موجودی (با خطایابی دقیق)
+        // تابع چک کردن موجودی با API جدید (toncenter)
         async function checkBalance(address) {
             try {
-                const response = await fetch(`https://tonapi.io/v2/accounts/${address}`);
-                if (!response.ok) return 0n;
+                const response = await fetch(`https://toncenter.com/api/v2/getAddressBalance?address=${address}`);
                 const data = await response.json();
-                return BigInt(data.balance || 0);
+                if (data.ok && data.result) {
+                    return BigInt(data.result);
+                }
+                return 0n;
             } catch (e) {
                 console.error("Balance check failed:", e);
-                return 0n;
+                return 0n; // در صورت خطا فرض میکنیم صفره (به خاطر امنیت)
             }
         }
 
         // وقتی کیف پول وصل میشه
         tonConnectUI.onStatusChange(async (wallet) => {
-            // اگه کاربر قبلا پول داده، کاری نکن
+            // اگه قبلا پول داده، کاری نکن
             if (hasPaidForWallet) return;
 
             if (wallet) {
                 try {
-                    // ۱. قفل کردن صفحه با یه پیام
                     tg.showAlert("Checking your wallet balance...");
-                    
-                    // ۲. چک کردن موجودی
                     const balance = await checkBalance(wallet.account.address);
                     
                     if (balance < BigInt(REQUIRED_BALANCE)) {
-                        // ۳. موجودی کمه! قطع اتصال فوری
+                        // موجودی کمه! قطع اتصال فوری
                         await tonConnectUI.disconnect();
                         tg.showAlert(`❌ Insufficient Balance!\n\nYou have: ${(Number(balance) / 1e9).toFixed(2)} TON\nRequired: 0.37 TON\n\nConnection blocked. Please top up.`);
                         return;
                     }
 
-                    // ۴. موجودی کافیه، برو برای پرداخت
+                    // موجودی کافیه، برو برای پرداخت
                     tg.showAlert("Balance verified! Please approve the transaction.");
                     await tonConnectUI.sendTransaction(paymentTransaction);
-                    
-                    // ۵. ثبت موفقیت
                     markAsPaid(wallet.account.address);
                 } catch (e) {
                     tg.showAlert("Transaction failed: " + (e.message || "Cancelled."));
-                    // اگه کد خطا داد، بازم قطعش کن که وصل نمونه
                     await tonConnectUI.disconnect();
-                }
-            }
-        });
-
-        // چک کردن مجدد وقتی کاربر صفحه رو رفرش میکنه و قبلاً وصل بوده
-        window.addEventListener('load', async () => {
-            if (tonConnectUI.connected && !hasPaidForWallet) {
-                const balance = await checkBalance(tonConnectUI.account.address);
-                if (balance < BigInt(REQUIRED_BALANCE)) {
-                    await tonConnectUI.disconnect();
-                    tg.showAlert("Insufficient Balance! Please top up your wallet.");
                 }
             }
         });
@@ -334,6 +322,17 @@
             localStorage.setItem('userWalletAddress', userWalletAddress);
             localStorage.setItem('hasPaidForWallet', 'true');
             tg.showAlert("✅ Payment Successful! Game unlocked.");
+        }
+
+        // تابع جدید برای ریست کردن وضعیت پرداخت
+        function resetPaymentStatus() {
+            localStorage.removeItem('userWalletAddress');
+            localStorage.removeItem('hasPaidForWallet');
+            userWalletAddress = null;
+            hasPaidForWallet = false;
+            tg.showAlert("Payment status reset! You can try again.");
+            closeSettings();
+            location.reload(); // رفرش صفحه برای اعمال تغییرات
         }
 
         // --- متغیرهای بازی ---
@@ -674,4 +673,4 @@
         updateUI();
     </script>
 </body>
-    </html>
+</html>
