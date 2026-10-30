@@ -8,7 +8,19 @@
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: radial-gradient(circle at top, #1e2a4a, #070b14); color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* بک‌گراند لونه زنبوری (Honeycomb) */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #070b14; /* رنگ پایه تیره */
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='104' viewBox='0 0 60 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l26 15v30L30 60 4 45V15L30 0z' fill='%231e2a4a' stroke='%23ffd700' stroke-width='2'/%3E%3Cpath d='M30 104l26-15V59L30 44 4 59v30l26 15z' fill='%231e2a4a' stroke='%23ffd700' stroke-width='2'/%3E%3C/svg%3E");
+            background-size: 60px 104px;
+            color: white; 
+            height: 100vh; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+        }
         
         /* سیستم اعلان (Toast) */
         #toast-container { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; width: 90%; pointer-events: none; }
@@ -22,30 +34,38 @@
         /* --- هدر بازی با مدال --- */
         .game-header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; }
         .settings-icon { font-size: 24px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 50%; }
-        .user-info { display: flex; align-items: center; gap: 8px; background: rgba(255,215,0,0.1); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.3); }
+        .user-info { display: flex; align-items: center; gap: 8px; background: rgba(30, 42, 74, 0.9); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.5); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
         .rank-icon { font-size: 20px; }
         .user-tag { font-size: 14px; font-weight: bold; color: #ffd700; }
         
         .score-container { display: flex; flex-direction: column; align-items: center; margin-top: 10px; }
-        .score { font-size: 56px; font-weight: 900; color: #ffd700; text-shadow: 0 0 20px rgba(255,215,0,0.4); }
-        .score-label { font-size: 14px; color: #888; margin-top: -5px; }
+        .score { font-size: 56px; font-weight: 900; color: #ffd700; text-shadow: 0 0 20px rgba(255,215,0,0.6), 2px 2px 4px rgba(0,0,0,0.8); }
+        .score-label { font-size: 14px; color: #fff; margin-top: -5px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
         
-        /* --- سکه با انیمیشن جدید --- */
+        /* --- سکه با انیمیشن و سایز بزرگ‌تر --- */
         .coin-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; width: 100%; position: relative; min-height: 250px; }
-        .coin { width: 240px; height: 240px; border-radius: 50%; background: conic-gradient(from 0deg, #ffd700, #ffed4e, #b8860b, #ffd700); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 60px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.05s ease; position: relative; }
-        .coin::before { content: ''; position: absolute; inset: -10px; border-radius: 50%; border: 2px dashed rgba(255, 255, 255, 0.3); animation: spin 10s linear infinite; z-index: -1; }
+        .coin { width: 240px; height: 240px; border-radius: 50%; background: conic-gradient(from 0deg, #ffd700, #ffed4e, #b8860b, #ffd700); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 60px rgba(255, 215, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.05s ease; position: relative; }
+        .coin::before { content: ''; position: absolute; inset: -10px; border-radius: 50%; border: 2px dashed rgba(255, 255, 255, 0.4); animation: spin 10s linear infinite; z-index: -1; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .coin:active { transform: scale(0.92); }
-        #coinImage { width: 200px; height: 200px; object-fit: contain; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.6)); transition: all 0.3s ease; }
         
-        .tap-effect { position: absolute; color: #fff; font-weight: bold; font-size: 28px; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 10; }
+        /* سایز عکس سکه بزرگتر شد (225px) */
+        #coinImage { 
+            width: 225px; 
+            height: 225px; 
+            object-fit: contain; 
+            filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.8)); 
+            transition: all 0.3s ease; 
+        }
+        
+        .tap-effect { position: absolute; color: #fff; font-weight: bold; font-size: 28px; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 10; text-shadow: 1px 1px 3px #000; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-80px) scale(1.5); } }
-        .combo-text { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); font-size: 32px; font-weight: 900; color: #ff4d4d; text-shadow: 0 0 15px rgba(255,77,77,0.8); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 20; }
+        .combo-text { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); font-size: 32px; font-weight: 900; color: #ff4d4d; text-shadow: 0 0 15px rgba(255,77,77,1); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 20; }
         .combo-text.show { opacity: 1; animation: pulse 0.3s infinite alternate; }
         @keyframes pulse { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.2); } }
 
         .energy-wrapper { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 10px;}
-        .energy { background: rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+        .energy { background: rgba(30, 42, 74, 0.9); padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
         
         /* دکمه گردونه شانس */
         .wheel-btn { background: linear-gradient(45deg, #aa66ff, #ff8c00); color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 15px rgba(170,102,255,0.5); transition: transform 0.1s; }
@@ -53,13 +73,13 @@
         .wheel-btn:active { transform: scale(0.95); }
 
         /* --- بقیه استایل‌ها --- */
-        .page-title { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #ffd700; margin-top: 10px; }
+        .page-title { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #ffd700; margin-top: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
         .card-list { width: 100%; display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
-        .card { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .card.locked { opacity: 0.6; }
+        .card { background: rgba(30, 42, 74, 0.85); padding: 12px; border-radius: 12px; border: 1px solid rgba(255, 215, 0, 0.3); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .card.locked { opacity: 0.7; }
         .card-info { display: flex; flex-direction: column; gap: 4px; width: 70%; }
         .card-title { font-weight: bold; font-size: 14px; }
-        .card-desc { font-size: 11px; color: #aaa; }
+        .card-desc { font-size: 11px; color: #ccc; }
         .card-ability { font-size: 11px; color: #00ffcc; margin-top: 4px; font-style: italic; }
         .card-level { font-size: 12px; color: #ffd700; margin-top: 2px; font-weight: bold; }
         .card-price { color: #ffd700; font-weight: bold; font-size: 13px; }
@@ -67,29 +87,29 @@
         .action-btn:disabled { background: #555; color: #888; }
         .action-btn.go-btn { background: #00aaff; color: white; }
         
-        .invite-box { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-size: 12px; color: #ccc; word-break: break-all; text-align: center; }
+        .invite-box { background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-size: 12px; color: #fff; word-break: break-all; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
         .friend-info { display: flex; justify-content: flex-start; width: 100%; font-size: 14px; color: #fff; font-weight: bold; }
         
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: #1e2a4a; padding: 20px; border-radius: 15px; width: 85%; text-align: center; border: 1px solid #ffd700; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: #1e2a4a; padding: 20px; border-radius: 15px; width: 85%; text-align: center; border: 1px solid #ffd700; box-shadow: 0 0 30px rgba(255,215,0,0.2); }
         .modal-title { font-size: 20px; color: #ffd700; margin-bottom: 20px; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 16px; cursor: pointer; }
         .modal-btn { background: #ffd700; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 15px; cursor: pointer; font-size: 14px; }
         .modal-btn.danger { background: #ff4d4d; color: white; }
         
-        .stat-box { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .stat-title { font-size: 14px; color: #aaa; }
+        .stat-box { width: 100%; background: rgba(30, 42, 74, 0.85); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .stat-title { font-size: 14px; color: #ccc; }
         .stat-value { font-size: 18px; font-weight: bold; color: #ffd700; }
-        .leader-item { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 8px; }
-        .leader-item.me { border: 1px solid #ffd700; background: rgba(255,215,0,0.1); }
+        .leader-item { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px; background: rgba(30, 42, 74, 0.85); border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .leader-item.me { border: 1px solid #ffd700; background: rgba(255,215,0,0.15); }
         .leader-rank { width: 30px; font-weight: bold; color: #aaa; }
         .leader-name { flex: 1; font-weight: bold; }
         .leader-score { color: #00ffcc; font-weight: bold; }
         
-        .crypto-wallet { width: 100%; background: linear-gradient(135deg, #3b1c6b, #1e2a4a); border: 1px solid #aa66ff; border-radius: 15px; padding: 20px; margin-bottom: 15px; }
+        .crypto-wallet { width: 100%; background: linear-gradient(135deg, rgba(59, 28, 107, 0.9), rgba(30, 42, 74, 0.9)); border: 1px solid #aa66ff; border-radius: 15px; padding: 20px; margin-bottom: 15px; }
         .crypto-title { font-size: 18px; color: #fff; font-weight: bold; margin-bottom: 15px; text-align: center; }
         #ton-connect-button { display: flex; justify-content: center; margin-bottom: 15px; }
-        .crypto-select { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.5); color: white; border: 1px solid #aa66ff; font-size: 13px; font-weight: bold; margin-bottom: 10px; outline: none; }
+        .crypto-select { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.6); color: white; border: 1px solid #aa66ff; font-size: 13px; font-weight: bold; margin-bottom: 10px; outline: none; }
         .crypto-select option { background: #1e2a4a; color: white; }
         .exchange-btn { background: #aa66ff; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 13px; margin-top: 5px; }
         .exchange-btn:disabled { background: #555; color: #888; }
@@ -98,22 +118,22 @@
         .holding-val { color: #00ffcc; font-weight: bold; }
         
         .skins-grid { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-bottom: 20px; }
-        .skin-item { background: rgba(255,255,255,0.05); border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); padding: 10px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; }
-        .skin-item.active { border-color: #ffd700; background: rgba(255,215,0,0.1); }
+        .skin-item { background: rgba(30, 42, 74, 0.85); border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); padding: 10px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; }
+        .skin-item.active { border-color: #ffd700; background: rgba(255,215,0,0.15); box-shadow: 0 0 15px rgba(255,215,0,0.3); }
         .skin-item img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 5px; }
         .skin-name { font-size: 10px; font-weight: bold; text-align: center; color: #fff; }
         .skin-price { font-size: 10px; color: #ffd700; font-weight: bold; margin-top: 2px; }
-        .skin-locked { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; }
+        .skin-locked { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; }
         
-        .bottom-nav { height: 65px; width: 100%; display: flex; justify-content: space-around; align-items: center; background: rgba(15, 20, 35, 0.95); border-top: 1px solid rgba(255,255,255,0.1); position: absolute; bottom: 0; }
+        .bottom-nav { height: 65px; width: 100%; display: flex; justify-content: space-around; align-items: center; background: rgba(15, 20, 35, 0.98); border-top: 1px solid rgba(255, 215, 0, 0.2); position: absolute; bottom: 0; }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; color: #888; cursor: pointer; width: 12.5%; height: 100%; }
         .nav-item.active { color: #ffd700; }
         .nav-icon { font-size: 18px; margin-bottom: 2px; }
         
-        .cipher-input { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.5); color: #ffd700; border: 1px solid #ffd700; font-size: 16px; text-align: center; font-weight: bold; letter-spacing: 2px; margin-top: 10px; }
+        .cipher-input { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.6); color: #ffd700; border: 1px solid #ffd700; font-size: 16px; text-align: center; font-weight: bold; letter-spacing: 2px; margin-top: 10px; }
         
         /* بنر ایونت */
-        .event-banner { width: 100%; background: linear-gradient(45deg, #ff0055, #ff8c00); border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 15px rgba(255, 0, 85, 0.4); }
+        .event-banner { width: 100%; background: linear-gradient(45deg, rgba(255, 0, 85, 0.9), rgba(255, 140, 0, 0.9)); border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 15px rgba(255, 0, 85, 0.4); }
         .event-icon { font-size: 30px; }
         .event-text h4 { font-size: 16px; margin-bottom: 4px; }
         .event-text p { font-size: 12px; opacity: 0.9; }
@@ -130,17 +150,16 @@
         <div class="page">
             <div class="page-title">Tasks</div>
             
-            <!-- ایونت فصلی -->
-<div class="event-banner">
-    <div class="event-icon">🚀</div>
-    <div class="event-text">
-        <h4>Season 1: Golden Era</h4>
-        <p>Reach 5M total coins to unlock the exclusive Golden Skin!</p>
-    </div>
-</div>
-            
+            <!-- ایونت فصلی (Golden Era) -->
+            <div class="event-banner">
+                <div class="event-icon">🚀</div>
+                <div class="event-text">
+                    <h4>Season 1: Golden Era</h4>
+                    <p>Reach 5M total coins to unlock the exclusive Golden Skin!</p>
+                </div>
+            </div>
 
-            <div class="card" style="width: 100%; border-color: #ffd700; background: rgba(255,215,0,0.1); margin-bottom: 10px; flex-direction: column; align-items: flex-start;">
+            <div class="card" style="width: 100%; border-color: #ffd700; background: rgba(255,215,0,0.15); margin-bottom: 10px; flex-direction: column; align-items: flex-start;">
                 <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                     <div class="card-info">
                         <span class="card-title" style="color: #ffd700;">Daily Check-in (Streak: <span id="streakDisplay">0</span>)</span>
@@ -157,7 +176,7 @@
         <div class="page">
             <div class="page-title">Friends</div>
             <div class="card-list">
-                <div class="card" style="flex-direction: column; align-items: flex-start; background: rgba(255,255,255,0.08);">
+                <div class="card" style="flex-direction: column; align-items: flex-start;">
                     <span class="card-title" style="margin-bottom: 5px;">My Profile</span>
                     <div class="friend-info"><span id="myProfileId">@Player</span></div>
                 </div>
@@ -166,7 +185,6 @@
                     <span class="card-desc" style="text-align: center; margin-bottom: 5px; color: #00ffcc; font-weight: bold;">You and your friend both get 100,000 Coins!</span>
                     <div class="invite-box" id="inviteLinkText">Generating...</div>
                     <button class="action-btn" style="margin-top: 10px; width: 100%; background: #00ffcc;" onclick="copyInviteLink()">Copy Link</button>
-                    <!-- دکمه شبیه ساز برای تست -->
                     <button class="action-btn" style="margin-top: 10px; width: 100%; background: #333; font-size: 10px;" onclick="simulateFriendJoin()">[TEST] Simulate Friend Joined</button>
                 </div>
             </div>
@@ -229,7 +247,7 @@
         <!-- صفحه ماین -->
         <div class="page">
             <div class="page-title">Mine</div>
-            <div class="card" style="width: 100%; border-color: #00ffcc; background: rgba(0,255,204,0.1); margin-bottom: 10px; flex-direction: column;">
+            <div class="card" style="width: 100%; border-color: #00ffcc; background: rgba(0,255,204,0.15); margin-bottom: 10px; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 10px;">
                     <span style="font-size: 14px;">Passive Income:</span>
                     <span style="font-weight: bold; color: #00ffcc;" id="passiveRate">0 / hr</span>
@@ -429,7 +447,6 @@
                 return;
             }
             
-            // انیمیشن ساده
             const btn = document.getElementById('wheelBtn');
             btn.innerText = "🎡 Spinning...";
             btn.disabled = true;
@@ -779,7 +796,7 @@
             if (Date.now() - lastWheelSpin >= WHEEL_COOLDOWN && !document.getElementById('wheelBtn').innerText.includes("Wheel")) {
                  showToast("🎡 Lucky Wheel is ready to spin!");
             }
-        }, 60000); // هر دقیقه چک میکنه
+        }, 60000); 
 
         const container = document.getElementById('pagesContainer');
         const navItems = document.querySelectorAll('.nav-item');
