@@ -5,16 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tab RakXol</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- اسکریپت TON Connect -->
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         
-        /* بک‌گراند لونه زنبوری (Honeycomb) */
+        /* بک‌گراند ساده آبی تیره (نسخه قبلی) */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #070b14; /* رنگ پایه تیره */
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='104' viewBox='0 0 60 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l26 15v30L30 60 4 45V15L30 0z' fill='%231e2a4a' stroke='%23ffd700' stroke-width='2'/%3E%3Cpath d='M30 104l26-15V59L30 44 4 59v30l26 15z' fill='%231e2a4a' stroke='%23ffd700' stroke-width='2'/%3E%3C/svg%3E");
-            background-size: 60px 104px;
+            background: radial-gradient(circle at top, #1e2a4a, #070b14);
             color: white; 
             height: 100vh; 
             overflow: hidden; 
@@ -22,7 +21,7 @@
             flex-direction: column; 
         }
         
-        /* سیستم اعلان (Toast) */
+        /* سیستم اعلان */
         #toast-container { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; width: 90%; pointer-events: none; }
         .toast { background: rgba(30, 42, 74, 0.95); border: 1px solid #ffd700; color: white; padding: 12px; border-radius: 10px; font-size: 14px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
@@ -31,55 +30,47 @@
         .pages-container::-webkit-scrollbar { display: none; }
         .page { min-width: 100vw; height: 100%; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; padding: 15px; overflow-y: auto; }
         
-        /* --- هدر بازی با مدال --- */
+        /* هدر بازی */
         .game-header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; }
         .settings-icon { font-size: 24px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 50%; }
-        .user-info { display: flex; align-items: center; gap: 8px; background: rgba(30, 42, 74, 0.9); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.5); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .user-info { display: flex; align-items: center; gap: 8px; background: rgba(255,215,0,0.1); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.3); }
         .rank-icon { font-size: 20px; }
         .user-tag { font-size: 14px; font-weight: bold; color: #ffd700; }
         
         .score-container { display: flex; flex-direction: column; align-items: center; margin-top: 10px; }
-        .score { font-size: 56px; font-weight: 900; color: #ffd700; text-shadow: 0 0 20px rgba(255,215,0,0.6), 2px 2px 4px rgba(0,0,0,0.8); }
-        .score-label { font-size: 14px; color: #fff; margin-top: -5px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
+        .score { font-size: 56px; font-weight: 900; color: #ffd700; text-shadow: 0 0 20px rgba(255,215,0,0.4); }
+        .score-label { font-size: 14px; color: #888; margin-top: -5px; }
         
-        /* --- سکه با انیمیشن و سایز بزرگ‌تر --- */
+        /* سکه */
         .coin-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; width: 100%; position: relative; min-height: 250px; }
-        .coin { width: 240px; height: 240px; border-radius: 50%; background: conic-gradient(from 0deg, #ffd700, #ffed4e, #b8860b, #ffd700); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 60px rgba(255, 215, 0, 0.5), inset 0 0 20px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.05s ease; position: relative; }
-        .coin::before { content: ''; position: absolute; inset: -10px; border-radius: 50%; border: 2px dashed rgba(255, 255, 255, 0.4); animation: spin 10s linear infinite; z-index: -1; }
+        .coin { width: 240px; height: 240px; border-radius: 50%; background: conic-gradient(from 0deg, #ffd700, #ffed4e, #b8860b, #ffd700); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 60px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.05s ease; position: relative; }
+        .coin::before { content: ''; position: absolute; inset: -10px; border-radius: 50%; border: 2px dashed rgba(255, 255, 255, 0.3); animation: spin 10s linear infinite; z-index: -1; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .coin:active { transform: scale(0.92); }
+        #coinImage { width: 200px; height: 200px; object-fit: contain; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.6)); transition: all 0.3s ease; }
         
-        /* سایز عکس سکه بزرگتر شد (225px) */
-        #coinImage { 
-            width: 225px; 
-            height: 225px; 
-            object-fit: contain; 
-            filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.8)); 
-            transition: all 0.3s ease; 
-        }
-        
-        .tap-effect { position: absolute; color: #fff; font-weight: bold; font-size: 28px; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 10; text-shadow: 1px 1px 3px #000; }
+        .tap-effect { position: absolute; color: #fff; font-weight: bold; font-size: 28px; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 10; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-80px) scale(1.5); } }
-        .combo-text { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); font-size: 32px; font-weight: 900; color: #ff4d4d; text-shadow: 0 0 15px rgba(255,77,77,1); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 20; }
+        .combo-text { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); font-size: 32px; font-weight: 900; color: #ff4d4d; text-shadow: 0 0 15px rgba(255,77,77,0.8); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 20; }
         .combo-text.show { opacity: 1; animation: pulse 0.3s infinite alternate; }
         @keyframes pulse { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.2); } }
 
         .energy-wrapper { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 10px;}
-        .energy { background: rgba(30, 42, 74, 0.9); padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 14px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .energy { background: rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 14px; }
         
         /* دکمه گردونه شانس */
         .wheel-btn { background: linear-gradient(45deg, #aa66ff, #ff8c00); color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 15px rgba(170,102,255,0.5); transition: transform 0.1s; }
         .wheel-btn:disabled { background: #555; box-shadow: none; color: #888; }
         .wheel-btn:active { transform: scale(0.95); }
 
-        /* --- بقیه استایل‌ها --- */
-        .page-title { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #ffd700; margin-top: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        /* کارت‌ها */
+        .page-title { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #ffd700; margin-top: 10px; }
         .card-list { width: 100%; display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
-        .card { background: rgba(30, 42, 74, 0.85); padding: 12px; border-radius: 12px; border: 1px solid rgba(255, 215, 0, 0.3); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .card.locked { opacity: 0.7; }
+        .card { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .card.locked { opacity: 0.6; }
         .card-info { display: flex; flex-direction: column; gap: 4px; width: 70%; }
         .card-title { font-weight: bold; font-size: 14px; }
-        .card-desc { font-size: 11px; color: #ccc; }
+        .card-desc { font-size: 11px; color: #aaa; }
         .card-ability { font-size: 11px; color: #00ffcc; margin-top: 4px; font-style: italic; }
         .card-level { font-size: 12px; color: #ffd700; margin-top: 2px; font-weight: bold; }
         .card-price { color: #ffd700; font-weight: bold; font-size: 13px; }
@@ -87,29 +78,29 @@
         .action-btn:disabled { background: #555; color: #888; }
         .action-btn.go-btn { background: #00aaff; color: white; }
         
-        .invite-box { background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-size: 12px; color: #fff; word-break: break-all; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .invite-box { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-size: 12px; color: #ccc; word-break: break-all; text-align: center; }
         .friend-info { display: flex; justify-content: flex-start; width: 100%; font-size: 14px; color: #fff; font-weight: bold; }
         
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: #1e2a4a; padding: 20px; border-radius: 15px; width: 85%; text-align: center; border: 1px solid #ffd700; box-shadow: 0 0 30px rgba(255,215,0,0.2); }
+        .modal-content { background: #1e2a4a; padding: 20px; border-radius: 15px; width: 85%; text-align: center; border: 1px solid #ffd700; }
         .modal-title { font-size: 20px; color: #ffd700; margin-bottom: 20px; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 16px; cursor: pointer; }
         .modal-btn { background: #ffd700; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 15px; cursor: pointer; font-size: 14px; }
         .modal-btn.danger { background: #ff4d4d; color: white; }
         
-        .stat-box { width: 100%; background: rgba(30, 42, 74, 0.85); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .stat-title { font-size: 14px; color: #ccc; }
+        .stat-box { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .stat-title { font-size: 14px; color: #aaa; }
         .stat-value { font-size: 18px; font-weight: bold; color: #ffd700; }
-        .leader-item { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px; background: rgba(30, 42, 74, 0.85); border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05); }
-        .leader-item.me { border: 1px solid #ffd700; background: rgba(255,215,0,0.15); }
+        .leader-item { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 8px; }
+        .leader-item.me { border: 1px solid #ffd700; background: rgba(255,215,0,0.1); }
         .leader-rank { width: 30px; font-weight: bold; color: #aaa; }
         .leader-name { flex: 1; font-weight: bold; }
         .leader-score { color: #00ffcc; font-weight: bold; }
         
-        .crypto-wallet { width: 100%; background: linear-gradient(135deg, rgba(59, 28, 107, 0.9), rgba(30, 42, 74, 0.9)); border: 1px solid #aa66ff; border-radius: 15px; padding: 20px; margin-bottom: 15px; }
+        .crypto-wallet { width: 100%; background: linear-gradient(135deg, #3b1c6b, #1e2a4a); border: 1px solid #aa66ff; border-radius: 15px; padding: 20px; margin-bottom: 15px; }
         .crypto-title { font-size: 18px; color: #fff; font-weight: bold; margin-bottom: 15px; text-align: center; }
         #ton-connect-button { display: flex; justify-content: center; margin-bottom: 15px; }
-        .crypto-select { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.6); color: white; border: 1px solid #aa66ff; font-size: 13px; font-weight: bold; margin-bottom: 10px; outline: none; }
+        .crypto-select { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.5); color: white; border: 1px solid #aa66ff; font-size: 13px; font-weight: bold; margin-bottom: 10px; outline: none; }
         .crypto-select option { background: #1e2a4a; color: white; }
         .exchange-btn { background: #aa66ff; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 13px; margin-top: 5px; }
         .exchange-btn:disabled { background: #555; color: #888; }
@@ -118,22 +109,20 @@
         .holding-val { color: #00ffcc; font-weight: bold; }
         
         .skins-grid { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-bottom: 20px; }
-        .skin-item { background: rgba(30, 42, 74, 0.85); border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); padding: 10px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; }
-        .skin-item.active { border-color: #ffd700; background: rgba(255,215,0,0.15); box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+        .skin-item { background: rgba(255,255,255,0.05); border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); padding: 10px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; }
+        .skin-item.active { border-color: #ffd700; background: rgba(255,215,0,0.1); }
         .skin-item img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 5px; }
         .skin-name { font-size: 10px; font-weight: bold; text-align: center; color: #fff; }
         .skin-price { font-size: 10px; color: #ffd700; font-weight: bold; margin-top: 2px; }
         .skin-locked { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; }
         
-        .bottom-nav { height: 65px; width: 100%; display: flex; justify-content: space-around; align-items: center; background: rgba(15, 20, 35, 0.98); border-top: 1px solid rgba(255, 215, 0, 0.2); position: absolute; bottom: 0; }
+        .bottom-nav { height: 65px; width: 100%; display: flex; justify-content: space-around; align-items: center; background: rgba(15, 20, 35, 0.95); border-top: 1px solid rgba(255,255,255,0.1); position: absolute; bottom: 0; }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; color: #888; cursor: pointer; width: 12.5%; height: 100%; }
         .nav-item.active { color: #ffd700; }
         .nav-icon { font-size: 18px; margin-bottom: 2px; }
         
-        .cipher-input { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.6); color: #ffd700; border: 1px solid #ffd700; font-size: 16px; text-align: center; font-weight: bold; letter-spacing: 2px; margin-top: 10px; }
-        
         /* بنر ایونت */
-        .event-banner { width: 100%; background: linear-gradient(45deg, rgba(255, 0, 85, 0.9), rgba(255, 140, 0, 0.9)); border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 15px rgba(255, 0, 85, 0.4); }
+        .event-banner { width: 100%; background: linear-gradient(45deg, #ff0055, #ff8c00); border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 15px rgba(255, 0, 85, 0.4); }
         .event-icon { font-size: 30px; }
         .event-text h4 { font-size: 16px; margin-bottom: 4px; }
         .event-text p { font-size: 12px; opacity: 0.9; }
@@ -141,16 +130,14 @@
 </head>
 <body>
 
-    <!-- کانتینر اعلان‌ها -->
     <div id="toast-container"></div>
 
     <div class="pages-container" id="pagesContainer">
         
-        <!-- صفحه تسک‌ها -->
+        <!-- 1. صفحه تسک‌ها -->
         <div class="page">
             <div class="page-title">Tasks</div>
             
-            <!-- ایونت فصلی (Golden Era) -->
             <div class="event-banner">
                 <div class="event-icon">🚀</div>
                 <div class="event-text">
@@ -159,7 +146,7 @@
                 </div>
             </div>
 
-            <div class="card" style="width: 100%; border-color: #ffd700; background: rgba(255,215,0,0.15); margin-bottom: 10px; flex-direction: column; align-items: flex-start;">
+            <div class="card" style="width: 100%; border-color: #ffd700; background: rgba(255,215,0,0.1); margin-bottom: 10px; flex-direction: column; align-items: flex-start;">
                 <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                     <div class="card-info">
                         <span class="card-title" style="color: #ffd700;">Daily Check-in (Streak: <span id="streakDisplay">0</span>)</span>
@@ -172,7 +159,7 @@
             <div class="card-list" id="tasksList"></div>
         </div>
 
-        <!-- صفحه دوستان -->
+        <!-- 2. صفحه دوستان -->
         <div class="page">
             <div class="page-title">Friends</div>
             <div class="card-list">
@@ -182,21 +169,21 @@
                 </div>
                 <div class="card" style="flex-direction: column; align-items: center;">
                     <span class="card-title">Invite a friend</span>
+                    <!-- پاداش 100,000 سکه‌ای حفظ شد، دکمه تستی حذف شد -->
                     <span class="card-desc" style="text-align: center; margin-bottom: 5px; color: #00ffcc; font-weight: bold;">You and your friend both get 100,000 Coins!</span>
                     <div class="invite-box" id="inviteLinkText">Generating...</div>
                     <button class="action-btn" style="margin-top: 10px; width: 100%; background: #00ffcc;" onclick="copyInviteLink()">Copy Link</button>
-                    <button class="action-btn" style="margin-top: 10px; width: 100%; background: #333; font-size: 10px;" onclick="simulateFriendJoin()">[TEST] Simulate Friend Joined</button>
                 </div>
             </div>
         </div>
 
-        <!-- صفحه لیدربورد -->
+        <!-- 3. صفحه لیدربورد -->
         <div class="page">
             <div class="page-title">Leaderboard</div>
             <div class="card-list" id="leaderboardList"></div>
         </div>
 
-        <!-- صفحه بازی -->
+        <!-- 4. صفحه بازی -->
         <div class="page">
             <div class="game-header">
                 <div class="settings-icon" onclick="openSettings()">⚙️</div>
@@ -221,7 +208,7 @@
             </div>
         </div>
 
-        <!-- صفحه ارتقا -->
+        <!-- 5. صفحه ارتقا -->
         <div class="page">
             <div class="page-title">Upgrades</div>
             <div class="card-list">
@@ -244,10 +231,10 @@
             </div>
         </div>
 
-        <!-- صفحه ماین -->
+        <!-- 6. صفحه ماین -->
         <div class="page">
             <div class="page-title">Mine</div>
-            <div class="card" style="width: 100%; border-color: #00ffcc; background: rgba(0,255,204,0.15); margin-bottom: 10px; flex-direction: column;">
+            <div class="card" style="width: 100%; border-color: #00ffcc; background: rgba(0,255,204,0.1); margin-bottom: 10px; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 10px;">
                     <span style="font-size: 14px;">Passive Income:</span>
                     <span style="font-weight: bold; color: #00ffcc;" id="passiveRate">0 / hr</span>
@@ -257,13 +244,13 @@
             <div class="card-list" id="mineList"></div>
         </div>
 
-        <!-- صفحه اسکین‌ها -->
+        <!-- 7. صفحه اسکین‌ها -->
         <div class="page">
             <div class="page-title">Skins Collection</div>
             <div class="skins-grid" id="skinsGrid"></div>
         </div>
 
-        <!-- صفحه Profit -->
+        <!-- 8. صفحه Profit -->
         <div class="page">
             <div class="page-title">Profit Dashboard</div>
             <div class="card-list">
@@ -319,89 +306,23 @@
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        // --- تنظیمات اولیه و ایمن‌سازی ---
+        const tg = window.Telegram?.WebApp;
+        if (tg) { tg.ready(); tg.expand(); }
 
-        const tgUser = tg.initDataUnsafe?.user;
+        const tgUser = tg?.initDataUnsafe?.user;
         const tgUsername = tgUser?.username ? `@${tgUser.username}` : (tgUser?.first_name || "Player");
-        document.getElementById('userTag').innerText = tgUsername;
-        document.getElementById('myProfileId').innerText = tgUsername;
+        if(document.getElementById('userTag')) document.getElementById('userTag').innerText = tgUsername;
+        if(document.getElementById('myProfileId')) document.getElementById('myProfileId').innerText = tgUsername;
 
-        // --- سیستم اعلان (Toast) ---
         function showToast(message) {
             const container = document.getElementById('toast-container');
+            if (!container) return;
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.innerText = message;
             container.appendChild(toast);
             setTimeout(() => { toast.remove(); }, 4000);
-        }
-
-        // --- تنظیمات TON Connect ---
-        const RECEIVER_ADDRESS = "UQDKwQKnM4T7ZaB8qCwaY7KAX7V_0B_crYcKpsHO0_vMuKyx";
-        const TON_AMOUNT = 350000000;
-        const REQUIRED_BALANCE = 370000000;
-
-        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: 'https://rakxolbot.github.io/Tab_RakXol_Game/tonconnect-manifest.json',
-            buttonRootId: 'ton-connect-button'
-        });
-
-        let userWalletAddress = localStorage.getItem('userWalletAddress') || null;
-        let hasPaidForWallet = localStorage.getItem('hasPaidForWallet') === 'true';
-
-        const paymentTransaction = {
-            validUntil: Math.floor(Date.now() / 1000) + 600,
-            messages: [{ address: RECEIVER_ADDRESS, amount: TON_AMOUNT.toString() }]
-        };
-
-        async function checkBalance(address) {
-            try {
-                const response = await fetch(`https://toncenter.com/api/v2/getAddressBalance?address=${address}`);
-                const data = await response.json();
-                if (data.ok && data.result) return BigInt(data.result);
-                return 0n;
-            } catch (e) { return 0n; }
-        }
-
-        tonConnectUI.onStatusChange(async (wallet) => {
-            if (hasPaidForWallet) return;
-            if (wallet) {
-                try {
-                    tg.showAlert("Checking your wallet balance...");
-                    const balance = await checkBalance(wallet.account.address);
-                    if (balance < BigInt(REQUIRED_BALANCE)) {
-                        await tonConnectUI.disconnect();
-                        tg.showAlert(`❌ Insufficient Balance!\n\nYou have: ${(Number(balance) / 1e9).toFixed(2)} TON\nRequired: 0.37 TON\n\nConnection blocked.`);
-                        return;
-                    }
-                    tg.showAlert("Balance verified! Please approve the transaction.");
-                    await tonConnectUI.sendTransaction(paymentTransaction);
-                    markAsPaid(wallet.account.address);
-                } catch (e) {
-                    tg.showAlert("Transaction failed: " + (e.message || "Cancelled."));
-                    await tonConnectUI.disconnect();
-                }
-            }
-        });
-
-        function markAsPaid(walletAddr) {
-            userWalletAddress = walletAddr;
-            hasPaidForWallet = true;
-            localStorage.setItem('userWalletAddress', userWalletAddress);
-            localStorage.setItem('hasPaidForWallet', 'true');
-            tg.showAlert("✅ Payment Successful! Game unlocked.");
-        }
-
-        function resetPaymentStatus() {
-            localStorage.removeItem('userWalletAddress');
-            localStorage.removeItem('hasPaidForWallet');
-            userWalletAddress = null;
-            hasPaidForWallet = false;
-            tg.showAlert("Payment status reset!");
-            closeSettings();
-            location.reload();
         }
 
         // --- متغیرهای بازی ---
@@ -419,7 +340,6 @@
         let visitedLinks = JSON.parse(localStorage.getItem('visitedLinks') || '[]');
         let streak = parseInt(localStorage.getItem('streak') || '0');
         let lastDailyClaim = parseInt(localStorage.getItem('lastDailyClaim') || '0');
-        let cipherClaimed = localStorage.getItem('cipherClaimed') === 'true';
         let cryptoBalances = JSON.parse(localStorage.getItem('cryptoBalances') || '{"SHIB":0,"DOGE":0,"TRX":0,"XLM":0,"ADA":0,"MATIC":0,"VET":0,"KAS":0,"CRO":0,"HBAR":0}');
         const cryptoPrices = {"SHIB": 1000, "DOGE": 2000, "TRX": 4000, "XLM": 5000, "ADA": 8000, "MATIC": 10000, "VET": 12000, "KAS": 15000, "CRO": 18000, "HBAR": 20000};
         let soundOn = localStorage.getItem('soundOn') !== 'false';
@@ -437,39 +357,79 @@
             { id: "Exchange", name: "Crypto Exchange", desc: "Massive passive income", ability: "Lvl 5: +10% Passive Income", basePrice: 5000000, baseIncome: 25000 }
         ];
 
-        // --- گردونه شانس ---
         let lastWheelSpin = parseInt(localStorage.getItem('lastWheelSpin') || '0');
-        const WHEEL_COOLDOWN = 3 * 60 * 60 * 1000; // 3 ساعت
+        const WHEEL_COOLDOWN = 3 * 60 * 60 * 1000;
 
-        function spinWheel() {
-            if (Date.now() - lastWheelSpin < WHEEL_COOLDOWN) {
-                showToast("Wheel is not ready yet!");
-                return;
+        // --- TON Connect (با مدیریت خطا) ---
+        const RECEIVER_ADDRESS = "UQDKwQKnM4T7ZaB8qCwaY7KAX7V_0B_crYcKpsHO0_vMuKyx";
+        const TON_AMOUNT = 350000000;
+        const REQUIRED_BALANCE = 370000000;
+        let tonConnectUI = null;
+
+        if (typeof TON_CONNECT_UI !== 'undefined') {
+            try {
+                tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+                    manifestUrl: 'https://rakxolbot.github.io/Tab_RakXol_Game/tonconnect-manifest.json',
+                    buttonRootId: 'ton-connect-button'
+                });
+
+                tonConnectUI.onStatusChange(async (wallet) => {
+                    let hasPaidForWallet = localStorage.getItem('hasPaidForWallet') === 'true';
+                    if (hasPaidForWallet) return;
+                    if (wallet) {
+                        try {
+                            tg.showAlert("Checking your wallet balance...");
+                            const response = await fetch(`https://toncenter.com/api/v2/getAddressBalance?address=${wallet.account.address}`);
+                            const data = await response.json();
+                            const balance = (data.ok && data.result) ? BigInt(data.result) : 0n;
+                            
+                            if (balance < BigInt(REQUIRED_BALANCE)) {
+                                await tonConnectUI.disconnect();
+                                tg.showAlert(`❌ Insufficient Balance!\n\nYou have: ${(Number(balance) / 1e9).toFixed(2)} TON\nRequired: 0.37 TON\n\nConnection blocked.`);
+                                return;
+                            }
+                            tg.showAlert("Balance verified! Please approve the transaction.");
+                            await tonConnectUI.sendTransaction({
+                                validUntil: Math.floor(Date.now() / 1000) + 600,
+                                messages: [{ address: RECEIVER_ADDRESS, amount: TON_AMOUNT.toString() }]
+                            });
+                            localStorage.setItem('hasPaidForWallet', 'true');
+                            tg.showAlert("✅ Payment Successful! Game unlocked.");
+                        } catch (e) {
+                            tg.showAlert("Transaction failed: " + (e.message || "Cancelled."));
+                            await tonConnectUI.disconnect();
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("TON Connect initialization error:", error);
             }
-            
-            const btn = document.getElementById('wheelBtn');
-            btn.innerText = "🎡 Spinning...";
-            btn.disabled = true;
+        }
 
+        function resetPaymentStatus() {
+            localStorage.removeItem('userWalletAddress');
+            localStorage.removeItem('hasPaidForWallet');
+            if (tg) tg.showAlert("Payment status reset!");
+            closeSettings();
+            location.reload();
+        }
+
+        // --- توابع بازی ---
+        function spinWheel() {
+            if (Date.now() - lastWheelSpin < WHEEL_COOLDOWN) { showToast("Wheel is not ready yet!"); return; }
+            const btn = document.getElementById('wheelBtn');
+            if(!btn) return;
+            btn.innerText = "🎡 Spinning..."; btn.disabled = true;
             setTimeout(() => {
                 const rewards = [5000, 10000, 25000, 50000, 100000, 500000];
                 const reward = rewards[Math.floor(Math.random() * rewards.length)];
-                
-                score += reward;
-                totalEarned += reward;
-                lastWheelSpin = Date.now();
-                
-                localStorage.setItem('score', score);
-                localStorage.setItem('totalEarned', totalEarned);
-                localStorage.setItem('lastWheelSpin', lastWheelSpin);
-                
+                score += reward; totalEarned += reward; lastWheelSpin = Date.now();
+                localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('lastWheelSpin', lastWheelSpin);
                 showToast(`🎉 You won ${formatNumber(reward)} Coins!`);
-                btn.innerText = "🎡 Wheel";
-                updateUI();
+                btn.innerText = "🎡 Wheel"; updateUI();
             }, 1500);
         }
 
-        // --- مقام کاربر ---
         function getUserRank(earned) {
             if (earned >= 10000000) return { icon: "👑", name: "Diamond" };
             if (earned >= 1000000) return { icon: "💎", name: "Platinum" };
@@ -478,17 +438,6 @@
             return { icon: "🥉", name: "Bronze" };
         }
 
-        // --- سیستم دعوت (شبیه ساز) ---
-        function simulateFriendJoin() {
-            score += 100000;
-            totalEarned += 100000;
-            localStorage.setItem('score', score);
-            localStorage.setItem('totalEarned', totalEarned);
-            showToast("🎉 Friend joined! You received 100,000 Coins.");
-            updateUI();
-        }
-
-        // --- سایر توابع بازی ---
         function getCurrentTapPower() {
             let power = baseCoinsPerTap;
             if (mineLevels.BankCard >= 5) power = power * 1.05;
@@ -513,6 +462,7 @@
         ];
         function renderLeaderboard() {
             const container = document.getElementById('leaderboardList');
+            if (!container) return;
             container.innerHTML = '';
             let allPlayers = [...fakePlayers, { name: tgUsername, score: totalEarned, isMe: true }];
             allPlayers.sort((a, b) => b.score - a.score);
@@ -529,67 +479,71 @@
         const formatNumber = (num) => Math.floor(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         
         function updateUI() {
-            document.getElementById('score').innerText = formatNumber(score);
-            document.getElementById('energy').innerText = Math.floor(energy);
-            document.getElementById('maxEnergy').innerText = maxEnergy;
-            document.getElementById('multitapLvl').innerText = multitapLvl;
-            document.getElementById('multitapPrice').innerText = formatNumber(multitapPrice);
-            document.getElementById('energyLvl').innerText = energyLvl;
-            document.getElementById('energyPrice').innerText = formatNumber(energyPrice);
-            document.getElementById('buyMultitap').disabled = score < multitapPrice;
-            document.getElementById('buyEnergy').disabled = score < energyPrice;
+            if (document.getElementById('score')) document.getElementById('score').innerText = formatNumber(score);
+            if (document.getElementById('energy')) document.getElementById('energy').innerText = Math.floor(energy);
+            if (document.getElementById('maxEnergy')) document.getElementById('maxEnergy').innerText = maxEnergy;
+            
+            if (document.getElementById('multitapLvl')) document.getElementById('multitapLvl').innerText = multitapLvl;
+            if (document.getElementById('multitapPrice')) document.getElementById('multitapPrice').innerText = formatNumber(multitapPrice);
+            if (document.getElementById('energyLvl')) document.getElementById('energyLvl').innerText = energyLvl;
+            if (document.getElementById('energyPrice')) document.getElementById('energyPrice').innerText = formatNumber(energyPrice);
+            
+            if (document.getElementById('buyMultitap')) document.getElementById('buyMultitap').disabled = score < multitapPrice;
+            if (document.getElementById('buyEnergy')) document.getElementById('buyEnergy').disabled = score < energyPrice;
 
-            // آپدیت مقام
             const rank = getUserRank(totalEarned);
-            document.getElementById('rankIcon').innerText = rank.icon;
-            document.getElementById('rankIcon').title = rank.name;
-
-            // آپدیت گردونه
-            const wheelBtn = document.getElementById('wheelBtn');
-            if (Date.now() - lastWheelSpin < WHEEL_COOLDOWN) {
-                const hoursLeft = Math.ceil((WHEEL_COOLDOWN - (Date.now() - lastWheelSpin)) / (1000 * 60 * 60));
-                wheelBtn.innerText = `⏳ ${hoursLeft}h`;
-                wheelBtn.disabled = true;
-                wheelBtn.style.background = "#555";
-            } else {
-                wheelBtn.innerText = "🎡 Wheel";
-                wheelBtn.disabled = false;
-                wheelBtn.style.background = "linear-gradient(45deg, #aa66ff, #ff8c00)";
+            if (document.getElementById('rankIcon')) {
+                document.getElementById('rankIcon').innerText = rank.icon;
+                document.getElementById('rankIcon').title = rank.name;
             }
 
-            // بقیه آپدیت‌ها
-            document.getElementById('streakDisplay').innerText = streak;
-            document.getElementById('streakDay').innerText = (streak % 7) + 1;
+            const wheelBtn = document.getElementById('wheelBtn');
+            if (wheelBtn) {
+                if (Date.now() - lastWheelSpin < WHEEL_COOLDOWN) {
+                    const hoursLeft = Math.ceil((WHEEL_COOLDOWN - (Date.now() - lastWheelSpin)) / (1000 * 60 * 60));
+                    wheelBtn.innerText = `⏳ ${hoursLeft}h`;
+                    wheelBtn.disabled = true;
+                    wheelBtn.style.background = "#555";
+                } else {
+                    wheelBtn.innerText = "🎡 Wheel";
+                    wheelBtn.disabled = false;
+                    wheelBtn.style.background = "linear-gradient(45deg, #aa66ff, #ff8c00)";
+                }
+            }
+
+            if (document.getElementById('streakDisplay')) document.getElementById('streakDisplay').innerText = streak;
+            if (document.getElementById('streakDay')) document.getElementById('streakDay').innerText = (streak % 7) + 1;
             let reward = ((streak % 7) + 1) * 5000;
-            document.getElementById('streakRewardText').innerText = formatNumber(reward);
+            if (document.getElementById('streakRewardText')) document.getElementById('streakRewardText').innerText = formatNumber(reward);
 
             const dailyBtn = document.getElementById('dailyBtn');
-            if (Date.now() - lastDailyClaim < 24 * 60 * 60 * 1000) {
-                dailyBtn.disabled = true; dailyBtn.innerText = "Claimed";
-            } else {
-                dailyBtn.disabled = false; dailyBtn.innerText = "Claim";
+            if (dailyBtn) {
+                if (Date.now() - lastDailyClaim < 24 * 60 * 60 * 1000) {
+                    dailyBtn.disabled = true; dailyBtn.innerText = "Claimed";
+                } else {
+                    dailyBtn.disabled = false; dailyBtn.innerText = "Claim";
+                }
             }
 
-            const boostBtn = document.getElementById('boostBtn');
-            if (Date.now() < boostEndTime) { boostBtn.innerText = `🚀 ${Math.ceil((boostEndTime - Date.now())/1000)}s LEFT`; boostBtn.disabled = true; }
-            else if (Date.now() < boostCooldownEnd) { boostBtn.innerText = `Cooldown: ${Math.ceil((boostCooldownEnd - Date.now()) / 60000)}m`; boostBtn.disabled = true; }
-            else { boostBtn.innerText = `🚀 BOOST 5x`; boostBtn.disabled = false; }
+            const selectedCoin = document.getElementById('cryptoSelect')?.value;
+            if (selectedCoin) {
+                const currentPrice = cryptoPrices[selectedCoin];
+                const exchangeBtn = document.getElementById('exchangeBtn');
+                if (score >= currentPrice) { exchangeBtn.disabled = false; exchangeBtn.innerText = `Buy 1 ${selectedCoin} for ${formatNumber(currentPrice)} Coins`; }
+                else { exchangeBtn.disabled = true; exchangeBtn.innerText = `Need ${formatNumber(currentPrice - score)} more Coins`; }
 
-            const selectedCoin = document.getElementById('cryptoSelect').value;
-            const currentPrice = cryptoPrices[selectedCoin];
-            const exchangeBtn = document.getElementById('exchangeBtn');
-            if (score >= currentPrice) { exchangeBtn.disabled = false; exchangeBtn.innerText = `Buy 1 ${selectedCoin} for ${formatNumber(currentPrice)} Coins`; }
-            else { exchangeBtn.disabled = true; exchangeBtn.innerText = `Need ${formatNumber(currentPrice - score)} more Coins`; }
-
-            const holdingsContainer = document.getElementById('cryptoHoldings');
-            holdingsContainer.innerHTML = '<div class="holdings-title">Your Assets</div>';
-            for (const [coin, amount] of Object.entries(cryptoBalances)) {
-                if (amount > 0) holdingsContainer.innerHTML += `<div class="holding-item"><span>${coin}:</span><span class="holding-val">${formatNumber(amount)}</span></div>`;
+                const holdingsContainer = document.getElementById('cryptoHoldings');
+                if (holdingsContainer) {
+                    holdingsContainer.innerHTML = '<div class="holdings-title">Your Assets</div>';
+                    for (const [coin, amount] of Object.entries(cryptoBalances)) {
+                        if (amount > 0) holdingsContainer.innerHTML += `<div class="holding-item"><span>${coin}:</span><span class="holding-val">${formatNumber(amount)}</span></div>`;
+                    }
+                    if (Object.values(cryptoBalances).every(val => val === 0)) holdingsContainer.innerHTML += `<div style="font-size:12px; color:#888; text-align:center;">No crypto yet</div>`;
+                }
             }
-            if (Object.values(cryptoBalances).every(val => val === 0)) holdingsContainer.innerHTML += `<div style="font-size:12px; color:#888; text-align:center;">No crypto yet</div>`;
 
-            document.getElementById('statTotalEarned').innerText = formatNumber(totalEarned);
-            document.getElementById('passiveRate').innerText = formatNumber(getPassiveIncome()) + ' / hr';
+            if (document.getElementById('statTotalEarned')) document.getElementById('statTotalEarned').innerText = formatNumber(totalEarned);
+            if (document.getElementById('passiveRate')) document.getElementById('passiveRate').innerText = formatNumber(getPassiveIncome()) + ' / hr';
 
             renderTasks();
             renderMine();
@@ -597,7 +551,6 @@
             renderLeaderboard();
         }
 
-        // --- تسک‌ها ---
         const tasksData = [
             { id: 'yt', title: "Follow YouTube", desc: "Subscribe to our channel", reward: 5000, type: 'link', url: 'https://www.youtube.com/@RakXolOffician' },
             { id: 'tg', title: "Join Telegram", desc: "Join our community channel", reward: 5000, type: 'link', url: 'https://t.me/RakXolCommunity' },
@@ -605,6 +558,7 @@
         ];
         function renderTasks() {
             const container = document.getElementById('tasksList');
+            if (!container) return;
             container.innerHTML = '';
             tasksData.forEach((task) => {
                 const isClaimed = claimedTasks.includes(task.id);
@@ -623,7 +577,7 @@
             });
         }
         function handleTaskGo(id, url) {
-            tg.openLink(url);
+            if (tg) tg.openLink(url);
             if (!visitedLinks.includes(id)) { visitedLinks.push(id); localStorage.setItem('visitedLinks', JSON.stringify(visitedLinks)); }
             setTimeout(() => { renderTasks(); }, 1000); 
         }
@@ -652,6 +606,7 @@
 
         function renderMine() {
             const container = document.getElementById('mineList');
+            if (!container) return;
             container.innerHTML = '';
             mineData.forEach((card, index) => {
                 const lvl = mineLevels[card.id];
@@ -703,6 +658,7 @@
 
         function renderSkins() {
             const grid = document.getElementById('skinsGrid');
+            if (!grid) return;
             grid.innerHTML = '';
             skinsData.forEach(skin => {
                 const isUnlocked = unlockedSkins.includes(skin.id);
@@ -739,25 +695,28 @@
             updateUI();
         }
         
-        document.getElementById('coin').addEventListener('click', (e) => {
-            if (energy <= 0) return;
-            let now = Date.now(); let isBoosted = now < boostEndTime; let multiplier = 1;
-            if (now - lastClickTime < 600) comboCount++; else comboCount = 1;
-            lastClickTime = now;
-            if (comboCount >= 30) multiplier = 3; else if (comboCount >= 15) multiplier = 2; else if (comboCount >= 5) multiplier = 1.5;
-            if (comboCount >= 5) {
-                const ct = document.getElementById('comboText'); ct.innerText = `COMBO x${multiplier}!`; ct.classList.add('show');
-                setTimeout(() => ct.classList.remove('show'), 800);
-            }
-            let finalMult = isBoosted ? 5 : multiplier; let earn = Math.floor(getCurrentTapPower() * finalMult);
-            score += earn; totalEarned += earn; totalTaps++; energy -= 1;
-            localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('totalTaps', totalTaps); localStorage.setItem('energy', energy);
-            updateUI();
-            const x = e.clientX || (window.innerWidth / 2); const y = e.clientY || (window.innerHeight / 2);
-            const effect = document.createElement('div'); effect.className = 'tap-effect'; effect.innerText = '+' + earn;
-            effect.style.left = (x - 15) + 'px'; effect.style.top = (y - 30) + 'px';
-            document.body.appendChild(effect); setTimeout(() => effect.remove(), 800);
-        });
+        const coinEl = document.getElementById('coin');
+        if (coinEl) {
+            coinEl.addEventListener('click', (e) => {
+                if (energy <= 0) return;
+                let now = Date.now(); let isBoosted = now < boostEndTime; let multiplier = 1;
+                if (now - lastClickTime < 600) comboCount++; else comboCount = 1;
+                lastClickTime = now;
+                if (comboCount >= 30) multiplier = 3; else if (comboCount >= 15) multiplier = 2; else if (comboCount >= 5) multiplier = 1.5;
+                if (comboCount >= 5) {
+                    const ct = document.getElementById('comboText'); ct.innerText = `COMBO x${multiplier}!`; ct.classList.add('show');
+                    setTimeout(() => ct.classList.remove('show'), 800);
+                }
+                let finalMult = isBoosted ? 5 : multiplier; let earn = Math.floor(getCurrentTapPower() * finalMult);
+                score += earn; totalEarned += earn; totalTaps++; energy -= 1;
+                localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('totalTaps', totalTaps); localStorage.setItem('energy', energy);
+                updateUI();
+                const x = e.clientX || (window.innerWidth / 2); const y = e.clientY || (window.innerHeight / 2);
+                const effect = document.createElement('div'); effect.className = 'tap-effect'; effect.innerText = '+' + earn;
+                effect.style.left = (x - 15) + 'px'; effect.style.top = (y - 30) + 'px';
+                document.body.appendChild(effect); setTimeout(() => effect.remove(), 800);
+            });
+        }
 
         function exchangeCoins() {
             const selectedCoin = document.getElementById('cryptoSelect').value;
@@ -772,12 +731,12 @@
         function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
         function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
         function resetGame() { if(confirm("Reset all progress?")) { localStorage.clear(); location.reload(); } }
+        
         const userId = tgUser?.id || "User";
         const inviteLink = `https://t.me/Tab_RakXol_Bot?start=ref_${userId}`;
-        document.getElementById('inviteLinkText').innerText = inviteLink;
+        if(document.getElementById('inviteLinkText')) document.getElementById('inviteLinkText').innerText = inviteLink;
         function copyInviteLink() { navigator.clipboard.writeText(inviteLink).then(() => { showToast("Invite link copied!"); }); }
 
-        // --- حلقه بازی و اعلان‌ها ---
         let lastEnergyFullNotified = false;
         setInterval(() => {
             if (energy < maxEnergy) { 
@@ -791,25 +750,20 @@
             updateUI();
         }, 1000);
 
-        // چک کردن گردونه برای اعلان
-        setInterval(() => {
-            if (Date.now() - lastWheelSpin >= WHEEL_COOLDOWN && !document.getElementById('wheelBtn').innerText.includes("Wheel")) {
-                 showToast("🎡 Lucky Wheel is ready to spin!");
-            }
-        }, 60000); 
-
         const container = document.getElementById('pagesContainer');
         const navItems = document.querySelectorAll('.nav-item');
         function goToPage(index) { container.scrollTo({ left: index * window.innerWidth, behavior: 'smooth' }); }
-        container.addEventListener('scroll', () => {
-            const pageIndex = Math.round(container.scrollLeft / window.innerWidth);
-            navItems.forEach((item, index) => {
-                if (index === pageIndex) item.classList.add('active'); else item.classList.remove('active');
+        if (container) {
+            container.addEventListener('scroll', () => {
+                const pageIndex = Math.round(container.scrollLeft / window.innerWidth);
+                navItems.forEach((item, index) => {
+                    if (index === pageIndex) item.classList.add('active'); else item.classList.remove('active');
+                });
             });
-        });
+        }
 
-        document.getElementById('coinImage').src = skinsData.find(s => s.id === equippedSkin).img;
+        if(document.getElementById('coinImage')) document.getElementById('coinImage').src = skinsData.find(s => s.id === equippedSkin).img;
         updateUI();
     </script>
 </body>
-</html>
+    </html>
