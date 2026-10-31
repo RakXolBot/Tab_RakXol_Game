@@ -60,18 +60,19 @@
         .crypto-wallet { width: 100%; background: linear-gradient(135deg, #3b1c6b, #1e2a4a); border: 1px solid #aa66ff; border-radius: 15px; padding: 20px; margin-bottom: 15px; }
         .crypto-title { font-size: 18px; color: #fff; font-weight: bold; margin-bottom: 15px; text-align: center; }
         #ton-connect-button { display: flex; justify-content: center; margin-bottom: 15px; }
-        .crypto-select { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.5); color: white; border: 1px solid #aa66ff; font-size: 13px; font-weight: bold; margin-bottom: 10px; outline: none; }
-        .exchange-btn { background: #aa66ff; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 13px; margin-top: 5px; }
-        .exchange-btn:disabled { background: #555; color: #888; }
+        
+        .skins-grid { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-bottom: 20px; }
+        .skin-item { background: rgba(255,255,255,0.05); border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); padding: 10px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+        .skin-item.active { border-color: #ffd700; background: rgba(255,215,0,0.1); }
+        .skin-item img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px; }
+        .skin-name { font-size: 10px; font-weight: bold; color: #fff; }
+        .skin-price { font-size: 10px; color: #ffd700; font-weight: bold; margin-top: 2px; }
+        .skin-locked { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; }
 
         .bottom-nav { height: 65px; width: 100%; display: flex; justify-content: space-around; align-items: center; background: rgba(15, 20, 35, 0.95); border-top: 1px solid rgba(255,255,255,0.1); position: absolute; bottom: 0; }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; color: #888; cursor: pointer; width: 50%; height: 100%; }
         .nav-item.active { color: #ffd700; }
         .nav-icon { font-size: 24px; margin-bottom: 2px; }
-        
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: #1e2a4a; padding: 20px; border-radius: 15px; width: 85%; text-align: center; border: 1px solid #ffd700; }
-        .modal-btn { background: #ffd700; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 15px; cursor: pointer; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -105,6 +106,7 @@
         <div class="page">
             <div class="page-title">Profit Dashboard</div>
             <div class="card-list">
+                
                 <div class="event-banner">
                     <div class="event-icon">🚀</div>
                     <div class="event-text">
@@ -113,10 +115,30 @@
                     </div>
                 </div>
 
+                <div class="card" style="border-color: #ffd700; background: rgba(255,215,0,0.1);">
+                    <div class="card-info">
+                        <span class="card-title" style="color: #ffd700;">Daily Check-in</span>
+                        <span class="card-desc">Claim your reward</span>
+                    </div>
+                    <button class="action-btn" id="dailyBtn" onclick="claimDaily()">Claim</button>
+                </div>
+
+                <div class="card" style="flex-direction: column; align-items: flex-start;">
+                    <span class="card-title">Invite a friend</span>
+                    <span class="card-desc" style="color: #00ffcc; margin-bottom: 5px;">You both get 100,000 Coins!</span>
+                    <button class="action-btn" style="margin-top: 10px; width: 100%; background: #00ffcc;" onclick="copyInviteLink()">Copy Invite Link</button>
+                </div>
+
                 <div class="crypto-wallet">
                     <div class="crypto-title">💼 Crypto Exchange</div>
                     <div id="ton-connect-button" style="margin-bottom: 15px;"></div>
                 </div>
+
+                <div style="width: 100%;">
+                    <span class="card-title" style="font-size: 16px;">Skins Collection</span>
+                    <div class="skins-grid" id="skinsGrid"></div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -130,7 +152,6 @@
     <script>
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.ready(); tg.expand(); }
-
         const tgUser = tg?.initDataUnsafe?.user;
         const tgUsername = tgUser?.username ? `@${tgUser.username}` : (tgUser?.first_name || "Player");
         document.getElementById('userTag').innerText = tgUsername;
@@ -144,59 +165,50 @@
             setTimeout(() => { toast.remove(); }, 4000);
         }
 
-        // --- اتصال به سرور امن (Render) ---
-        const SERVER_URL = 'https://tab-rakxol-bot.onrender.com';
-        const INIT_DATA = tg?.initData || "";
+        // --- متغیرهای بازی (همه لوکال) ---
+        let score = parseInt(localStorage.getItem('score') || '0');
+        let energy = parseInt(localStorage.getItem('energy') || '500');
+        let maxEnergy = 500;
+        let coinsPerTap = 1;
+        let lastDailyClaim = parseInt(localStorage.getItem('lastDailyClaim') || '0');
+        
+        let equippedSkin = parseInt(localStorage.getItem('equippedSkin') || '1');
+        let unlockedSkins = JSON.parse(localStorage.getItem('unlockedSkins') || '[1]');
 
-        async function postRequest(endpoint, data) {
-            try {
-                const response = await fetch(`${SERVER_URL}${endpoint}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ initData: INIT_DATA, ...data })
-                });
-                if (!response.ok) {
-                    const err = await response.json();
-                    showToast(`Error: ${err.error}`);
-                    return null;
-                }
-                return await response.json();
-            } catch (e) {
-                showToast("Network error. Please try again.");
-                return null;
+        const skinsData = [
+            { id: 1, name: "1 Dollar", price: 0, img: "coin1.png" }, { id: 2, name: "10 Dollars", price: 10000, img: "coin2.png" },
+            { id: 3, name: "100 Dollars", price: 30000, img: "coin3.png" }, { id: 4, name: "2x 100", price: 75000, img: "coin4.png" },
+            { id: 5, name: "3x 100", price: 150000, img: "coin5.png" }, { id: 6, name: "Stack", price: 350000, img: "coin6.png" }
+        ];
+
+        const formatNumber = (num) => Math.floor(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+        function updateUI() {
+            document.getElementById('score').innerText = formatNumber(score);
+            document.getElementById('energy').innerText = Math.floor(energy);
+            document.getElementById('maxEnergy').innerText = maxEnergy;
+
+            const dailyBtn = document.getElementById('dailyBtn');
+            if (Date.now() - lastDailyClaim < 24 * 60 * 60 * 1000) {
+                dailyBtn.disabled = true; dailyBtn.innerText = "Claimed";
+            } else {
+                dailyBtn.disabled = false; dailyBtn.innerText = "Claim";
             }
+            
+            renderSkins();
         }
 
-        // --- متغیرها ---
-        let score = 0, energy = 500, maxEnergy = 500, coinsPerTap = 1;
-
-        // --- بارگذاری از سرور ---
-        async function loadUser() {
-            const data = await postRequest('/api/login', {});
-            if (data) {
-                score = data.score; energy = data.energy; maxEnergy = data.max_energy; coinsPerTap = data.coins_per_tap;
-                updateUI();
-            }
-        }
-
-        // --- محاسبه ضد هک سکه ---
-        document.getElementById('coin').addEventListener('click', async (e) => {
+        // --- کلیک روی سکه ---
+        document.getElementById('coin').addEventListener('click', (e) => {
             if (energy <= 0) return;
             
-            // نمایش خوش‌بینانه (برای سرعت بالا)
             score += coinsPerTap;
             energy -= 1;
-            updateUI();
             
-            // ارسال به سرور برای تایید
-            const data = await postRequest('/api/tap', { taps: 1 });
-            if (data) {
-                score = data.score;
-                energy = data.energy;
-                updateUI();
-            } else {
-                loadUser(); // اگر سرور ارور داد، ریست کن
-            }
+            localStorage.setItem('score', score);
+            localStorage.setItem('energy', energy);
+            
+            updateUI();
 
             const x = e.clientX || (window.innerWidth / 2); 
             const y = e.clientY || (window.innerHeight / 2);
@@ -209,12 +221,95 @@
             setTimeout(() => effect.remove(), 800);
         });
 
-        const formatNumber = (num) => Math.floor(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        // --- جایزه روزانه ---
+        function claimDaily() {
+            if (Date.now() - lastDailyClaim >= 24 * 60 * 60 * 1000) {
+                score += 5000; 
+                lastDailyClaim = Date.now();
+                localStorage.setItem('score', score);
+                localStorage.setItem('lastDailyClaim', lastDailyClaim);
+                updateUI();
+                showToast("🎁 Daily reward claimed! +5,000 Coins.");
+            }
+        }
 
-        function updateUI() {
-            document.getElementById('score').innerText = formatNumber(score);
-            document.getElementById('energy').innerText = Math.floor(energy);
-            document.getElementById('maxEnergy').innerText = maxEnergy;
+        // --- اسکین‌ها ---
+        function renderSkins() {
+            const grid = document.getElementById('skinsGrid');
+            grid.innerHTML = '';
+            skinsData.forEach(skin => {
+                const isUnlocked = unlockedSkins.includes(skin.id);
+                const isEquipped = equippedSkin === skin.id;
+                const div = document.createElement('div');
+                div.className = `skin-item ${isEquipped ? 'active' : ''}`;
+                div.onclick = () => handleSkinClick(skin.id, isUnlocked, skin.price);
+                let lockOverlay = !isUnlocked ? `<div class="skin-locked">🔒</div>` : '';
+                div.innerHTML = `${lockOverlay}<img src="${skin.img}" onerror="this.src='https://i.imgur.com/8QO9Y3v.jpeg'"><span class="skin-name">${skin.name}</span><span class="skin-price">${isUnlocked ? (isEquipped ? 'EQUIPPED' : 'EQUIP') : formatNumber(skin.price)}</span>`;
+                grid.appendChild(div);
+            });
+        }
+
+        function handleSkinClick(id, isUnlocked, price) {
+            if (isUnlocked) {
+                if (equippedSkin !== id) {
+                    equippedSkin = id; 
+                    localStorage.setItem('equippedSkin', equippedSkin);
+                    document.getElementById('coinImage').src = skinsData.find(s => s.id === id).img;
+                    renderSkins();
+                }
+            } else {
+                if (score >= price) {
+                    score -= price; 
+                    unlockedSkins.push(id); 
+                    equippedSkin = id;
+                    localStorage.setItem('score', score);
+                    localStorage.setItem('unlockedSkins', JSON.stringify(unlockedSkins));
+                    localStorage.setItem('equippedSkin', equippedSkin);
+                    document.getElementById('coinImage').src = skinsData.find(s => s.id === id).img;
+                    updateUI(); 
+                    showToast(`Unlocked ${skinsData.find(s => s.id === id).name}!`);
+                } else { showToast("Not enough coins!"); }
+            }
+        }
+
+        // --- TON Connect ---
+        const RECEIVER_ADDRESS = "UQDKwQKnM4T7ZaB8qCwaY7KAX7V_0B_crYcKpsHO0_vMuKyx";
+        const TON_AMOUNT = 350000000;
+        const REQUIRED_BALANCE = 370000000;
+        
+        if (typeof TON_CONNECT_UI !== 'undefined') {
+            const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+                manifestUrl: 'https://rakxolbot.github.io/Tab_RakXol_Game/tonconnect-manifest.json',
+                buttonRootId: 'ton-connect-button'
+            });
+
+            tonConnectUI.onStatusChange(async (wallet) => {
+                if (localStorage.getItem('hasPaidForWallet') === 'true') return;
+                if (wallet) {
+                    try {
+                        tg.showAlert("Checking your wallet balance...");
+                        const response = await fetch(`https://toncenter.com/api/v2/getAddressBalance?address=${wallet.account.address}`);
+                        const data = await response.json();
+                        const balance = (data.ok && data.result) ? BigInt(data.result) : 0n;
+                        
+                        if (balance < BigInt(REQUIRED_BALANCE)) {
+                            await tonConnectUI.disconnect();
+                            tg.showAlert(`❌ Insufficient Balance!\n\nYou have: ${(Number(balance) / 1e9).toFixed(2)} TON\nRequired: 0.37 TON`);
+                            return;
+                        }
+                        tg.showAlert("Balance verified! Please approve the transaction.");
+                        await tonConnectUI.sendTransaction({
+                            validUntil: Math.floor(Date.now() / 1000) + 600,
+                            messages: [{ address: RECEIVER_ADDRESS, amount: TON_AMOUNT.toString() }]
+                        });
+                        localStorage.setItem('hasPaidForWallet', 'true');
+                        tg.showAlert("✅ Payment Successful!");
+                    } catch (e) {
+                        tg.showAlert("Transaction failed: " + (e.message || "Cancelled."));
+                        await tonConnectUI.disconnect();
+                    }
+                }
+            });
         }
 
         // --- ناوبری ---
@@ -228,10 +323,25 @@
             });
         });
 
+        function copyInviteLink() {
+            const userId = tgUser?.id || "User";
+            navigator.clipboard.writeText(`https://t.me/Tab_RakXol_Bot?start=ref_${userId}`).then(() => { showToast("Invite link copied!"); });
+        }
+
         function resetGame() { if(confirm("Reset all progress?")) { localStorage.clear(); location.reload(); } }
 
+        // --- حلقه افزایش انرژی ---
+        setInterval(() => {
+            if (energy < maxEnergy) { 
+                energy += 1; 
+                localStorage.setItem('energy', energy);
+                updateUI();
+            }
+        }, 3000);
+
         // شروع
-        loadUser();
+        document.getElementById('coinImage').src = skinsData.find(s => s.id === equippedSkin)?.img || 'coin1.png';
+        updateUI();
     </script>
 </body>
 </html>
