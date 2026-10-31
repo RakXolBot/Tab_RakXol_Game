@@ -8,19 +8,8 @@
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: radial-gradient(circle at top, #1e2a4a, #070b14); color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         
-        /* بک‌گراند ساده آبی تیره */
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background: radial-gradient(circle at top, #1e2a4a, #070b14);
-            color: white; 
-            height: 100vh; 
-            overflow: hidden; 
-            display: flex; 
-            flex-direction: column; 
-        }
-        
-        /* سیستم اعلان */
         #toast-container { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; width: 90%; pointer-events: none; }
         .toast { background: rgba(30, 42, 74, 0.95); border: 1px solid #ffd700; color: white; padding: 12px; border-radius: 10px; font-size: 14px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); animation: slideDown 0.3s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
@@ -29,7 +18,6 @@
         .pages-container::-webkit-scrollbar { display: none; }
         .page { min-width: 100vw; height: 100%; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; padding: 15px; overflow-y: auto; }
         
-        /* هدر بازی */
         .game-header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; }
         .settings-icon { font-size: 24px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 50%; }
         .user-info { display: flex; align-items: center; gap: 8px; background: rgba(255,215,0,0.1); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.3); }
@@ -40,7 +28,6 @@
         .score { font-size: 56px; font-weight: 900; color: #ffd700; text-shadow: 0 0 20px rgba(255,215,0,0.4); }
         .score-label { font-size: 14px; color: #888; margin-top: -5px; }
         
-        /* سکه */
         .coin-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; width: 100%; position: relative; min-height: 250px; }
         .coin { width: 240px; height: 240px; border-radius: 50%; background: conic-gradient(from 0deg, #ffd700, #ffed4e, #b8860b, #ffd700); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 60px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.05s ease; position: relative; }
         .coin::before { content: ''; position: absolute; inset: -10px; border-radius: 50%; border: 2px dashed rgba(255, 255, 255, 0.3); animation: spin 10s linear infinite; z-index: -1; }
@@ -57,12 +44,10 @@
         .energy-wrapper { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 10px;}
         .energy { background: rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 14px; }
         
-        /* دکمه گردونه شانس */
         .wheel-btn { background: linear-gradient(45deg, #aa66ff, #ff8c00); color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 15px rgba(170,102,255,0.5); transition: transform 0.1s; }
         .wheel-btn:disabled { background: #555; box-shadow: none; color: #888; }
         .wheel-btn:active { transform: scale(0.95); }
 
-        /* کارت‌ها */
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #ffd700; margin-top: 10px; }
         .card-list { width: 100%; display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
         .card { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
@@ -120,7 +105,6 @@
         .nav-item.active { color: #ffd700; }
         .nav-icon { font-size: 18px; margin-bottom: 2px; }
         
-        /* بنر ایونت */
         .event-banner { width: 100%; background: linear-gradient(45deg, #ff0055, #ff8c00); border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 15px rgba(255, 0, 85, 0.4); }
         .event-icon { font-size: 30px; }
         .event-text h4 { font-size: 16px; margin-bottom: 4px; }
@@ -353,13 +337,11 @@
             localStorage.setItem('soundOn', soundOn);
             document.getElementById('soundStatus').innerText = soundOn ? 'ON' : 'OFF';
             document.getElementById('soundStatus').style.color = soundOn ? '#00ffcc' : '#ff4d4d';
-            if(soundOn) playTone(800, 'sine', 0.1); // Play test sound
+            if(soundOn) playTone(800, 'sine', 0.1); 
         }
-        
-        // Initial settings UI
         if(!soundOn) document.getElementById('soundStatus').innerText = 'OFF';
 
-        // --- متغیرهای بازی ---
+        // --- متغیرهای بازی (LocalStorage) ---
         let score = parseInt(localStorage.getItem('score') || '0');
         let totalEarned = parseInt(localStorage.getItem('totalEarned') || '0');
         let totalTaps = parseInt(localStorage.getItem('totalTaps') || '0');
@@ -454,7 +436,7 @@
             if(!btn) return;
             
             btn.innerText = "🎡 Spinning..."; btn.disabled = true;
-            playTone(800, 'square', 0.1); // Spin sound
+            playTone(800, 'square', 0.1); 
 
             setTimeout(() => {
                 const rewards = [5000, 10000, 25000, 50000, 100000, 500000];
@@ -462,7 +444,7 @@
                 score += reward; totalEarned += reward; lastWheelSpin = Date.now();
                 localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('lastWheelSpin', lastWheelSpin);
                 
-                playTone(1200, 'sine', 0.4); // Win sound
+                playTone(1200, 'sine', 0.4);
                 showToast(`🎉 You won ${formatNumber(reward)} Coins!`);
                 btn.innerText = "🎡 Wheel"; updateUI();
             }, 1500);
@@ -624,7 +606,7 @@
             const task = tasksData.find(t => t.id === id);
             score += task.reward; totalEarned += task.reward; claimedTasks.push(id);
             localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('claimedTasks', JSON.stringify(claimedTasks));
-            playTone(1000, 'sine', 0.3); // Claim sound
+            playTone(1000, 'sine', 0.3); 
             updateUI();
         }
 
@@ -638,7 +620,7 @@
                 score += reward; totalEarned += reward; lastDailyClaim = now;
                 localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); 
                 localStorage.setItem('lastDailyClaim', lastDailyClaim); localStorage.setItem('streak', streak);
-                playTone(1000, 'sine', 0.3); // Daily sound
+                playTone(1000, 'sine', 0.3);
                 showToast(`🎁 Daily reward claimed! +${formatNumber(reward)} coins.`);
                 updateUI();
             }
@@ -671,7 +653,7 @@
             if (score >= price) {
                 score -= price; mineLevels[id]++;
                 localStorage.setItem('score', score); localStorage.setItem('mineLevels', JSON.stringify(mineLevels));
-                playTone(600, 'square', 0.2); // Buy sound
+                playTone(600, 'square', 0.2);
                 updateUI();
             }
         }
@@ -682,7 +664,7 @@
             if (earned > 0) {
                 score += earned; totalEarned += earned; lastMineCollect = now;
                 localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('lastMineCollect', lastMineCollect);
-                playTone(1000, 'sine', 0.3); // Collect sound
+                playTone(1000, 'sine', 0.3);
                 showToast(`⛏️ Collected ${formatNumber(earned)} coins!`);
                 updateUI();
             } else { showToast("Wait a bit longer!"); }
@@ -718,7 +700,7 @@
                 if (equippedSkin !== id) {
                     equippedSkin = id; localStorage.setItem('equippedSkin', equippedSkin);
                     document.getElementById('coinImage').src = skinsData.find(s => s.id === id).img; 
-                    playTone(800, 'sine', 0.2); // Equip sound
+                    playTone(800, 'sine', 0.2);
                     renderSkins();
                 }
             } else {
@@ -727,7 +709,7 @@
                     unlockedSkins.push(id); localStorage.setItem('unlockedSkins', JSON.stringify(unlockedSkins));
                     equippedSkin = id; localStorage.setItem('equippedSkin', equippedSkin);
                     document.getElementById('coinImage').src = skinsData.find(s => s.id === id).img;
-                    playTone(1200, 'sine', 0.3); // Unlock sound
+                    playTone(1200, 'sine', 0.3);
                     renderSkins(); updateUI(); showToast(`Unlocked ${skinsData.find(s => s.id === id).name}!`);
                 } else { showToast("Not enough coins!"); }
             }
@@ -757,7 +739,6 @@
                 score += earn; totalEarned += earn; totalTaps++; energy -= 1;
                 localStorage.setItem('score', score); localStorage.setItem('totalEarned', totalEarned); localStorage.setItem('totalTaps', totalTaps); localStorage.setItem('energy', energy);
                 
-                // صدای کلیک
                 playTone(600 + Math.random() * 200, 'square', 0.05);
                 
                 updateUI();
